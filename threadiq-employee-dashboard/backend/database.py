@@ -9,7 +9,17 @@ import os
 import secrets
 from datetime import datetime, timezone
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "threadiq.db")
+import tempfile
+
+def _resolve_db_path() -> str:
+    env_path = os.environ.get("THREADIQ_DB_PATH") or os.environ.get("DATABASE_PATH")
+    if env_path:
+        return env_path
+    if os.environ.get("VERCEL"):
+        return os.path.join(tempfile.gettempdir(), "threadiq.db")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "threadiq.db")
+
+DB_PATH = _resolve_db_path()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
