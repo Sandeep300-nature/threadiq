@@ -1,17 +1,86 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
+  "cleanUrls": false,
+  "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "destination": "/api/index.py"
     },
     {
-      "source": "/employee/:path*",
+      "source": "/api",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/employee/css/(.*)",
+      "destination": "/employee/css/$1"
+    },
+    {
+      "source": "/employee/js/(.*)",
+      "destination": "/employee/js/$1"
+    },
+    {
+      "source": "/employee",
       "destination": "/employee/index.html"
     },
     {
-      "source": "/manager/:path*",
+      "source": "/employee/",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/dashboard",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/inventory",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/transfers",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/history",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/settings",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/employee/(.*)",
+      "destination": "/employee/index.html"
+    },
+    {
+      "source": "/manager/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manager",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/overview",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/inventory",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/stores",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/transfers",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/approvals",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/settings",
       "destination": "/index.html"
     },
     {

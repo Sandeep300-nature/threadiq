@@ -47,3 +47,7 @@ ENV/
 *.key
 *.token
 *.credentials
+
+# Scratch workspace
+scratch/
+

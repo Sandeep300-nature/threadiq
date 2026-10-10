@@ -220,8 +220,11 @@ def init_db():
 
         # Apply schema migrations for imported retail tables (products, sales, suppliers, purchase_orders, promotions)
         try:
-            from backend.import_retail_datasets import apply_schema_migrations
+            from backend.import_retail_datasets import apply_schema_migrations, import_all_datasets
             apply_schema_migrations(conn)
+            cur_p = conn.execute("SELECT COUNT(*) FROM products;")
+            if cur_p.fetchone()[0] == 0:
+                import_all_datasets(db_path=DB_PATH)
         except Exception as e:
             pass
 
