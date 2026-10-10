@@ -1,0 +1,640 @@
+/* ==========================================================================
+   ThreadIQ Employee Inventory Dashboard - View-Specific Styles
+   Dashboard, Transfers, AI Alerts, Inventory History, Settings
+   ========================================================================== */
+
+/* ---------------------------------------------------------
+   View Routing Container
+   --------------------------------------------------------- */
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------
+   AI Alerts Panel & Banner
+   --------------------------------------------------------- */
+.ai-alerts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.alert-item-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.alert-item-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.alert-item-card.critical {
+  border-left: 5px solid var(--color-danger);
+  background: linear-gradient(90deg, #fff5f5 0%, #ffffff 8%);
+}
+
+.alert-item-card.warning {
+  border-left: 5px solid var(--color-warning);
+  background: linear-gradient(90deg, #fffdf5 0%, #ffffff 8%);
+}
+
+.alert-item-card.info {
+  border-left: 5px solid var(--color-primary-500);
+  background: linear-gradient(90deg, #f0f7ff 0%, #ffffff 8%);
+}
+
+.alert-item-card.optimization {
+  border-left: 5px solid var(--color-purple);
+  background: linear-gradient(90deg, #faf5ff 0%, #ffffff 8%);
+}
+
+.alert-icon-col {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.alert-item-card.critical .alert-icon-col {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.alert-item-card.warning .alert-icon-col {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.alert-item-card.info .alert-icon-col {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.alert-item-card.optimization .alert-icon-col {
+  background-color: var(--color-purple-bg);
+  color: var(--color-purple);
+}
+
+.alert-content-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alert-product-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-sku-pill {
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+  font-weight: 500;
+}
+
+.alert-severity-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.alert-severity-badge.critical {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
+}
+
+.alert-severity-badge.warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+}
+
+.alert-severity-badge.optimization {
+  background: var(--color-purple-bg);
+  color: var(--color-purple-text);
+}
+
+.alert-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.stat-metric-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-metric-pill strong {
+  color: var(--color-text-main);
+}
+
+.alert-ai-recommendation-box {
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ai-sparkle-icon {
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-recommendation-text {
+  font-size: 0.84rem;
+  color: var(--color-text-main);
+  line-height: 1.4;
+}
+
+.ai-recommendation-text strong {
+  color: var(--color-primary-900);
+}
+
+.alert-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------
+   Stock Transfers View
+   --------------------------------------------------------- */
+.transfer-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transfer-status-badge.in-transit {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border: 1px solid var(--color-info-border);
+}
+
+.transfer-status-badge.pending-approval {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+}
+
+.transfer-status-badge.approved {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border: 1px solid var(--color-primary-100);
+}
+
+.transfer-status-badge.received {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.transfer-status-badge.rejected {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
+}
+
+.transfer-direction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.transfer-direction-badge.outgoing {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.transfer-direction-badge.incoming {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.store-route-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.store-route-pill .arrow-icon {
+  color: var(--color-text-light);
+}
+
+.store-name-tag {
+  background: var(--color-bg-subtle);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.store-name-tag.destination {
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
+  border-color: var(--color-primary-100);
+}
+
+/* ---------------------------------------------------------
+   Inventory History / Audit Log View
+   --------------------------------------------------------- */
+.history-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.history-type-badge.stock-received {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.history-type-badge.sale {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.history-type-badge.damaged {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.history-type-badge.correction {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.qty-delta-chip {
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.qty-delta-chip.plus {
+  color: var(--color-success);
+}
+
+.qty-delta-chip.minus {
+  color: var(--color-danger);
+}
+
+/* ---------------------------------------------------------
+   Quick Action Banner on Dashboard
+   --------------------------------------------------------- */
+.dashboard-banner {
+  background: linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1e40af 100%);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px -5px rgba(23, 37, 84, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-content {
+  max-width: 620px;
+  z-index: 2;
+}
+
+.banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #93c5fd;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.banner-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
+  color: #ffffff;
+}
+
+.banner-text {
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+/* Settings View Layout */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------
+   Authentication & Login View Styles
+   --------------------------------------------------------- */
+.login-page-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, #1e3a8a 0%, #0f172a 75%, #090d16 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-header {
+  padding: 32px 32px 24px;
+  text-align: center;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-brand-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.35);
+  margin-bottom: 14px;
+}
+
+.login-brand-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--color-primary-900);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.login-brand-title span {
+  color: var(--color-primary-500);
+}
+
+.login-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-subtle);
+  margin-top: 6px;
+}
+
+.login-body {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.demo-switcher-box {
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-switcher-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary-800);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-chips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.demo-chip-btn {
+  background: #ffffff;
+  border: 1px solid var(--color-primary-300);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-primary-900);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.demo-chip-btn:hover {
+  background: #eff6ff;
+  border-color: var(--color-primary-500);
+  transform: translateY(-1px);
+}
+
+.demo-chip-name {
+  font-weight: 700;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.demo-chip-store {
+  font-size: 0.68rem;
+  color: var(--color-primary-600);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle-btn:hover {
+  color: var(--color-text-main);
+}
+
+.login-error-banner {
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-text);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-footer-note {
+  text-align: center;
+  padding: 0 32px 24px;
+  font-size: 0.72rem;
+  color: var(--color-text-light);
+}
+
+/* Connection indicator states */
+.connection-indicator.reconnecting {
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+.connection-indicator.reconnecting .pulse-dot {
+  background-color: var(--color-warning);
+}
+
+.connection-indicator.offline {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+}
+.connection-indicator.offline .pulse-dot {
+  background-color: var(--color-danger);
+  animation: none;
+}
+

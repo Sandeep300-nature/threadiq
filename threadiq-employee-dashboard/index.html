@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ThreadIQ Employee Inventory Dashboard for store associates across Karnataka, India. Real-time T-shirt stock tracking, AI redistribution, and inter-store transfers." />
+  <meta name="theme-color" content="#172554" />
+  <title>ThreadIQ — Employee Inventory Dashboard | Bengaluru Central</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/views.css" />
+</head>
+<body>
+
+  <!-- ========================================================
+       Login Screen (Two Employee Accounts: EMP001 / EMP002)
+       ======================================================== -->
+  <div id="login-screen" class="login-page-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3 2 7l4 3v11h12V10l4-3-4-4-4 2a3 3 0 0 1-4 0Z"/>
+          </svg>
+        </div>
+        <h1 class="login-brand-title">Thread<span>IQ</span></h1>
+        <p class="login-subtitle">Employee Inventory &amp; Stock Redistribution Portal</p>
+      </div>
+
+      <div class="login-body">
+        <!-- Demo Account Quick Autofill Switcher -->
+        <div class="demo-switcher-box">
+          <div class="demo-switcher-title">
+            <span>Demo Employee Logins</span>
+            <span style="font-size: 0.68rem; color: var(--color-primary-600); font-weight: 500;">Click to fill credentials</span>
+          </div>
+          <div class="demo-chips-grid">
+            <button type="button" class="demo-chip-btn" id="btn-demo-rahul" title="Autofill Rahul Sharma credentials">
+              <span class="demo-chip-name">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Rahul Sharma
+              </span>
+              <span class="demo-chip-store">EMP001 · Mysuru Central</span>
+            </button>
+            <button type="button" class="demo-chip-btn" id="btn-demo-priya" title="Autofill Priya Kumar credentials">
+              <span class="demo-chip-name">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Priya Kumar
+              </span>
+              <span class="demo-chip-store">EMP002 · Brigade Road Flagship</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Login Error Message Banner -->
+        <div id="login-error-banner" class="login-error-banner" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="login-error-text">Invalid Employee ID or password.</span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" novalidate>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" for="login-username">
+              Employee ID or Email <span class="required-star">*</span>
+            </label>
+            <input
+              type="text"
+              id="login-username"
+              class="form-control"
+              placeholder="e.g. EMP001 or rahul.sharma@threadiq.in"
+              required
+              autocomplete="username"
+            />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label" for="login-password">
+              Password <span class="required-star">*</span>
+            </label>
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="login-password"
+                class="form-control"
+                placeholder="Enter account password..."
+                required
+                autocomplete="current-password"
+              />
+              <button type="button" id="btn-toggle-password" class="password-toggle-btn" aria-label="Toggle password visibility">
+                <span id="password-toggle-icon"></span>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="btn btn-primary btn-lg" style="width: 100%;">
+            <span id="btn-login-icon"></span>
+            <span id="btn-login-text">Sign In to Store Inventory</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="login-footer-note">
+        Protected with PBKDF2 salted hash security &amp; store-level access control.<br/>
+        Karnataka Clothing Stores Grid · Brigade Road Flagship &amp; Mysuru Central
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Authenticated Dashboard App (Shown after login)
+       ======================================================== -->
+  <div id="authenticated-app" style="display: none;">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <div class="app-wrapper">
+      <!-- Fixed Left Sidebar Navigation -->
+      <aside id="app-sidebar" class="sidebar" aria-label="Main Navigation">
+        <!-- Brand Header -->
+        <div class="sidebar-header">
+          <a href="#dashboard" class="brand-link" id="brand-home-link">
+            <div class="brand-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3 2 7l4 3v11h12V10l4-3-4-4-4 2a3 3 0 0 1-4 0Z"/>
+              </svg>
+            </div>
+            <div class="brand-text-block">
+              <span class="brand-name">Thread<span>IQ</span></span>
+              <span class="brand-subtitle">Retail Grid · KA</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Assigned Store Context Pill -->
+        <div class="sidebar-store-chip">
+          <div class="store-chip-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+              <path d="M2 7h20"/>
+            </svg>
+          </div>
+          <div class="store-chip-info">
+            <span class="store-chip-title" id="sidebar-store-title">Bengaluru Central</span>
+            <span class="store-chip-region" id="sidebar-store-region">Store #KA-BLR-04</span>
+          </div>
+        </div>
+
+      <!-- Nav Items -->
+      <nav class="sidebar-nav" aria-label="Portal Navigation">
+        <div class="nav-section-title">Core Operations</div>
+
+        <button class="nav-item active" data-nav="dashboard" id="nav-btn-dashboard">
+          <span class="nav-icon" id="nav-icon-dashboard"></span>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-nav="inventory" id="nav-btn-inventory">
+          <span class="nav-icon" id="nav-icon-inventory"></span>
+          <span>My Inventory</span>
+        </button>
+
+        <button class="nav-item" data-nav="transfers" id="nav-btn-transfers">
+          <span class="nav-icon" id="nav-icon-transfers"></span>
+          <span>Stock Transfers</span>
+          <span class="nav-badge info" id="nav-badge-transfers">1</span>
+        </button>
+
+        <div class="nav-section-title">Audit & Configuration</div>
+
+        <button class="nav-item" data-nav="history" id="nav-btn-history">
+          <span class="nav-icon" id="nav-icon-history"></span>
+          <span>Inventory History</span>
+        </button>
+
+        <button class="nav-item" data-nav="settings" id="nav-btn-settings">
+          <span class="nav-icon" id="nav-icon-settings"></span>
+          <span>Profile & Settings</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer (Employee Profile & Logout) -->
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar-sm" id="sidebar-user-avatar">RS</div>
+          <div class="user-info-text">
+            <span class="user-info-name" id="sidebar-user-name">Rahul Sharma</span>
+            <span class="user-info-role">Store Associate</span>
+          </div>
+        </div>
+        <button class="btn-sidebar-logout" id="btn-sidebar-logout">
+          <span id="logout-icon-span"></span>
+          <span>Logout Session</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================================================
+         Main Content Area & Sticky Topbar
+         ======================================================== -->
+    <div class="main-wrapper">
+      <!-- Sticky Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <!-- Mobile Drawer Toggle -->
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+
+          <!-- Breadcrumb and Page Title -->
+          <div class="breadcrumb-block">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <span>ThreadIQ</span>
+              <span>/</span>
+              <span>Bengaluru Central</span>
+              <span>/</span>
+              <span class="current" id="breadcrumb-current-view">Dashboard</span>
+            </nav>
+            <h1 class="page-title" id="page-title-heading">Employee Inventory Dashboard</h1>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Assigned Store Selector (Read-only / Assigned Lock) -->
+          <div class="store-selector-badge" id="topbar-store-badge" title="Assigned Store">
+            <span class="badge-icon" id="topbar-store-icon"></span>
+            <span id="topbar-store-name">Bengaluru Central</span>
+            <span class="store-assigned-tag">Assigned</span>
+          </div>
+
+          <!-- Live Inventory Connection Indicator -->
+          <div class="connection-indicator" id="connection-indicator-btn" title="Live WebSocket / Central Cloud Connection Status">
+            <div class="pulse-dot"></div>
+            <span id="connection-status-text">Live: Connected</span>
+          </div>
+
+          <!-- Last Sync Time Pill -->
+          <div class="last-sync-tag" id="last-sync-tag">
+            <span id="sync-icon-span"></span>
+            <span id="last-sync-text">Synced: Just now</span>
+          </div>
+
+          <!-- Quick Sync Trigger -->
+          <button class="btn btn-secondary btn-sm" id="btn-sync-now" title="Trigger instant inventory cloud synchronization">
+            <span id="btn-sync-icon-span"></span>
+            <span>Sync</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <button class="notification-bell-btn" id="topbar-bell-btn" aria-label="Store Notifications">
+            <span id="topbar-bell-icon"></span>
+          </button>
+
+          <!-- Employee Profile Avatar & Meta -->
+          <div class="topbar-profile">
+            <div class="topbar-avatar" id="topbar-user-avatar">RS</div>
+            <div class="topbar-user-meta">
+              <span class="topbar-user-name" id="topbar-user-name">Rahul Sharma</span>
+              <span class="topbar-user-role">Store Associate · KA-BLR-04</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Page Content Container -->
+      <main class="content-container">
+
+        <!-- 4 Summary KPI Cards (Rendered on top of Dashboard and My Inventory) -->
+        <section aria-label="Inventory Metrics Overview">
+          <div id="summary-cards-container" class="summary-cards-grid">
+            <!-- Injected by js/components/summaryCards.js -->
+          </div>
+        </section>
+
+        <!-- ========================================================
+             VIEW 1: Dashboard Overview
+             ======================================================== -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- Welcome & Operational Banner -->
+          <div class="dashboard-banner">
+            <div class="banner-content">
+              <span class="banner-badge">
+                <span id="banner-sparkle-icon"></span> Karnataka Retail Redistribution Grid
+              </span>
+              <h2 class="banner-title">Welcome back, Rahul Sharma</h2>
+              <p class="banner-text">
+                Your store <strong>Bengaluru Central (Store #KA-BLR-04)</strong> is currently synchronized with ThreadIQ's AI inventory intelligence engine. Review critical low-stock items or record stock intake.
+              </p>
+            </div>
+            <div class="banner-actions">
+              <button class="btn btn-primary" id="btn-banner-view-inventory" style="background:#ffffff; color:var(--color-primary-900); border:none;">
+                <span id="banner-box-icon"></span> My Inventory
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Inventory Priority Preview -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <h3 class="panel-title">
+                  <span id="panel-inventory-icon"></span> Critical & Low-Stock T-Shirts
+                </h3>
+                <p class="panel-description">Variants requiring immediate restocking, cycle count audit, or incoming shipment.</p>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-view-all-inventory">Open Full Inventory Table &rarr;</button>
+              </div>
+            </div>
+            <div id="dashboard-inventory-table-container">
+              <!-- Injected by js/components/inventoryTable.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             VIEW 2: My Inventory (Full T-Shirt Catalog)
+             ======================================================== -->
+        <section id="view-inventory" class="view-section">
+          <!-- DEMO Store Selector Bar for Testing Workflow -->
+          <div class="demo-store-bar" id="demo-store-banner">
+            <div class="demo-store-info">
+              <span class="demo-badge-tag">DEMO SESSION</span>
+              <span class="demo-store-label">Assigned Store:</span>
+              <div class="demo-store-select-wrap">
+                <select id="demo-store-select" class="demo-store-select" aria-label="Assigned Store Demo Selector">
+                  <option value="STORE_KA_BLR_01">Brigade Road Flagship (Bengaluru)</option>
+                  <option value="STORE_KA_MYS_01">Mysuru Central (Hub)</option>
+                  <option value="STORE_KA_MNG_01">Coastal City Pavilion (Mangaluru)</option>
+                  <option value="STORE_KA_HUB_01">North Karnataka Hub (Hubballi)</option>
+                </select>
+              </div>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--color-text-subtle); display: flex; align-items: center; gap: 6px;">
+              <span>Filtering strictly by assigned store. Changes persist in authoritative SQLite database.</span>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <h3 class="panel-title">
+                  <span id="panel-catalog-icon"></span> <span id="inventory-view-store-title">Brigade Road Flagship</span> T-Shirt Inventory
+                </h3>
+                <p class="panel-description">Complete live catalog of crew necks, Supima tees, and athletic wear across all sizes and colours.</p>
+              </div>
+              <div class="panel-actions">
+                <span class="trend-badge neutral" style="font-size: 0.78rem;">
+                  Live Store Sync
+                </span>
+              </div>
+            </div>
+
+            <!-- Table Filters and Search Toolbar -->
+            <div class="table-toolbar">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" id="search-icon-span"></span>
+                <input type="text" id="inventory-search-input" placeholder="Search product name, SKU, or colour..." />
+              </div>
+
+              <div class="toolbar-filters">
+                <!-- Colour Filter -->
+                <select id="filter-colour" class="filter-select" aria-label="Filter by Colour">
+                  <option value="all">All Colours</option>
+                  <option value="black">Black</option>
+                  <option value="white">White</option>
+                  <option value="navy">Navy Blue</option>
+                  <option value="grey">Grey</option>
+                </select>
+
+                <!-- Size Filter -->
+                <select id="filter-size" class="filter-select" aria-label="Filter by Size">
+                  <option value="all">All Sizes</option>
+                  <option value="S">Size S</option>
+                  <option value="M">Size M</option>
+                  <option value="L">Size L</option>
+                  <option value="XL">Size XL</option>
+                  <option value="XXL">Size XXL</option>
+                </select>
+
+                <!-- Stock Status Filter -->
+                <select id="filter-status" class="filter-select" aria-label="Filter by Stock Status">
+                  <option value="all">All Stock Statuses</option>
+                  <option value="in_stock">In Stock (&ge; Threshold)</option>
+                  <option value="low_stock">Low Stock (&lt; Threshold)</option>
+                  <option value="out_of_stock">Out of Stock (= 0)</option>
+                </select>
+
+                <!-- Clear Filters Button -->
+                <button class="btn btn-secondary btn-sm" id="btn-reset-table-filters" title="Reset all filters">
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Table Container -->
+            <div id="inventory-table-container">
+              <!-- Injected by js/components/inventoryTable.js -->
+            </div>
+
+            <!-- Table Footer -->
+            <div class="table-footer">
+              <span id="table-record-count-text">Showing active T-shirt variants</span>
+              <span style="font-size: 0.76rem; color: var(--color-text-subtle);">Threshold: 15 units (standard) / 10-20 units (custom)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             VIEW 3: Approved Stock Transfers (Read-Only)
+             ======================================================== -->
+        <section id="view-transfers" class="view-section">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <h3 class="panel-title">
+                  <span id="panel-transfer-icon"></span> Approved Stock Transfers
+                </h3>
+                <p class="panel-description">Transfers authorized by your store manager</p>
+              </div>
+              <div class="panel-actions" style="display: flex; align-items: center; gap: 10px;">
+                <span class="trend-badge neutral" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 5px;">
+                  <span id="transfer-lock-icon"></span> Read-only · Managed by your store manager
+                </span>
+                <button class="btn btn-secondary btn-sm" id="btn-refresh-transfers" title="Synchronize with manager database">
+                  <span id="refresh-transfers-icon"></span> Refresh
+                </button>
+              </div>
+            </div>
+
+            <!-- Transfers Search and Filter Toolbar -->
+            <div class="table-toolbar">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" id="transfers-search-icon"></span>
+                <input type="text" id="transfers-search-input" placeholder="Search by transfer ID or product..." />
+              </div>
+
+              <div class="toolbar-filters">
+                <select id="transfers-filter-status" class="filter-select" aria-label="Filter by Transfer Status">
+                  <option value="all">All Statuses</option>
+                  <option value="Approved">Approved</option>
+                  <option value="In Transit">In Transit</option>
+                  <option value="Received">Received</option>
+                </select>
+
+                <div style="font-size: 0.76rem; color: var(--color-text-subtle); display: flex; align-items: center; gap: 6px; padding-left: 8px;">
+                  <span id="transfers-sync-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); display: inline-block;"></span>
+                  <span id="transfers-sync-text">Last synchronized: Just now</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="transfers-view-container">
+              <!-- Injected by js/components/transfersView.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             VIEW 5: Inventory History (Auditable Activity Log)
+             ======================================================== -->
+        <section id="view-history" class="view-section">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <h3 class="panel-title">
+                  <span id="panel-history-icon"></span> Auditable Inventory History & Activity Log
+                </h3>
+                <p class="panel-description">Comprehensive immutable ledger of every stock intake, sale deduction, damage report, and cycle audit.</p>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-export-history-csv">
+                  <span id="history-download-icon"></span> Export CSV Audit
+                </button>
+              </div>
+            </div>
+
+            <!-- History Filters Toolbar -->
+            <div class="table-toolbar">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" id="history-search-icon"></span>
+                <input type="text" id="history-search-input" placeholder="Search by SKU, employee, reference ID..." />
+              </div>
+
+              <div class="toolbar-filters">
+                <select id="history-filter-type" class="filter-select">
+                  <option value="all">All Update Types</option>
+                  <option value="Stock Received">Stock Received</option>
+                  <option value="Sale / Stock Reduction">Sale / Stock Reduction</option>
+                  <option value="Damaged Items">Damaged Items</option>
+                  <option value="Stock Correction">Stock Correction</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="history-view-container">
+              <!-- Injected by js/components/historyView.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             VIEW 6: Profile & Settings
+             ======================================================== -->
+        <section id="view-settings" class="view-section">
+          <div class="settings-grid">
+            <!-- Left: Profile and Assignment -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div class="panel-header-left">
+                  <h3 class="panel-title">
+                    <span id="settings-user-icon"></span> Store Associate Profile & Assignment
+                  </h3>
+                  <p class="panel-description">Authenticated employee credentials and retail store assignment.</p>
+                </div>
+              </div>
+              <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <div class="topbar-avatar" style="width: 56px; height: 56px; font-size: 1.3rem;">RS</div>
+                  <div>
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--color-text-main);">Rahul Sharma</h4>
+                    <p style="font-size: 0.82rem; color: var(--color-text-subtle);">Employee ID: <code>EMP-TIQ-8842</code></p>
+                    <p style="font-size: 0.82rem; color: var(--color-text-subtle);">Email: rahul.sharma@threadiq.in</p>
+                  </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+                  <h5 style="font-size: 0.88rem; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">Assigned Store Details</h5>
+                  <div style="background: var(--color-bg-subtle); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.82rem;">
+                    <div><strong>Store Name:</strong> Bengaluru Central</div>
+                    <div><strong>Store Code:</strong> KA-BLR-04</div>
+                    <div><strong>Zone:</strong> Karnataka South Metro</div>
+                    <div><strong>Reporting Manager:</strong> Priya Kulkarni</div>
+                    <div style="grid-column: span 2;"><strong>Location:</strong> Brigade Road, Bengaluru, Karnataka 560001</div>
+                  </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+                  <h5 style="font-size: 0.88rem; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">Permission Guardrails</h5>
+                  <ul style="font-size: 0.82rem; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 6px; padding-left: 20px;">
+                    <li>✓ Update T-shirt quantities (Stock Received, Sale, Damaged, Correction)</li>
+                    <li>✓ Receive and verify incoming shipments for Bengaluru Central</li>
+                    <li>✗ Cannot approve inter-store transfers (Store Manager role required)</li>
+                    <li>✗ Restricted to Bengaluru Central store inventory only</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Backend API Integration & Demo Controls -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div class="panel-header-left">
+                  <h3 class="panel-title">
+                    <span id="settings-db-icon"></span> Backend API Integration
+                  </h3>
+                  <p class="panel-description">FastAPI & PostgreSQL configuration.</p>
+                </div>
+              </div>
+              <div style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+                <div class="form-group">
+                  <label class="form-label" for="setting-backend-url">FastAPI Backend URL</label>
+                  <input type="text" id="setting-backend-url" class="form-control" value="http://localhost:8000" />
+                  <span style="font-size: 0.72rem; color: var(--color-text-subtle);">Connects to Python FastAPI REST API when running.</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Data Service Mode</label>
+                  <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                      <input type="radio" name="apiMode" value="local" checked id="radio-mode-local" />
+                      <span><strong>Local API Engine (Active)</strong> — FastAPI Specification Compliant & Persisted</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                      <input type="radio" name="apiMode" value="external" id="radio-mode-external" />
+                      <span><strong>Live Python Backend</strong> (<code>http://localhost:8000</code>)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+                  <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Demo Reset</h5>
+                  <p style="font-size: 0.78rem; color: var(--color-text-subtle); margin-bottom: 10px;">
+                    Restore initial sample inventory (Black Size M Out of Stock, White Size L Low Stock).
+                  </p>
+                  <button class="btn btn-secondary btn-sm" id="btn-reset-demo-data" style="color: var(--color-danger); border-color: var(--color-danger-border);">
+                    Reset Demo Inventory
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+  </div> <!-- /authenticated-app -->
+
+  <!-- Notification Dropdown Popover (Attached to bell) -->
+  <div id="notification-popover" style="display: none; position: fixed; top: 68px; right: 80px; width: 340px; background: #ffffff; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border: 1px solid var(--color-border); z-index: 150; overflow: hidden;">
+    <div style="padding: 14px 18px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <span style="font-weight: 700; font-size: 0.88rem; color: var(--color-text-main);">Store Notifications</span>
+    </div>
+    <div style="padding: 18px; text-align: center; font-size: 0.82rem; color: var(--color-text-subtle);">
+      <p style="margin: 0; font-weight: 500; color: var(--color-text-main);">All inventory operations up to date</p>
+      <p style="margin: 6px 0 0; font-size: 0.76rem; color: var(--color-text-muted);">Real-time store synchronization is active across Karnataka.</p>
+    </div>
+  </div>
+
+  <!-- Main JavaScript App Entry -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
