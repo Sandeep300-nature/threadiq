@@ -1,0 +1,491 @@
+supplier,sku,purchase_price,lead_time_days,moq
+Ludhiana Woollens,S105-BEI-M,766,14,30
+Ludhiana Woollens,S105-BEI-L,766,14,20
+Ludhiana Woollens,S105-BEI-XL,766,14,30
+Ludhiana Woollens,S105-BEI-XXL,766,7,30
+Ludhiana Woollens,S105-BEI-3XL,766,21,30
+Ludhiana Woollens,S105-BEI-4XL,766,14,20
+Ludhiana Woollens,S105-BEI-5XL,766,21,30
+Ludhiana Woollens,S105-SKY-M,766,21,20
+Ludhiana Woollens,S105-SKY-L,766,7,20
+Ludhiana Woollens,S105-SKY-XL,766,7,30
+Ludhiana Woollens,S105-SKY-XXL,766,14,20
+Ludhiana Woollens,S105-SKY-3XL,766,7,30
+Ludhiana Woollens,S105-SKY-4XL,766,21,30
+Ludhiana Woollens,S105-SKY-5XL,766,14,20
+Bengaluru Garments Ltd,S109-BLA-M,583,14,50
+Bengaluru Garments Ltd,S109-BLA-L,583,10,30
+Bengaluru Garments Ltd,S109-BLA-XL,583,14,30
+Bengaluru Garments Ltd,S109-BLA-XXL,583,14,20
+Bengaluru Garments Ltd,S109-BLA-3XL,583,14,20
+Bengaluru Garments Ltd,S109-BLA-4XL,583,14,30
+Bengaluru Garments Ltd,S109-BLA-5XL,583,7,30
+Bengaluru Garments Ltd,S109-SKY-M,583,7,50
+Bengaluru Garments Ltd,S109-SKY-L,583,14,50
+Bengaluru Garments Ltd,S109-SKY-XL,583,7,50
+Bengaluru Garments Ltd,S109-SKY-XXL,583,10,50
+Bengaluru Garments Ltd,S109-SKY-3XL,583,10,50
+Bengaluru Garments Ltd,S109-SKY-4XL,583,21,50
+Bengaluru Garments Ltd,S109-SKY-5XL,583,10,30
+Bengaluru Garments Ltd,S117-GRE-M,401,14,50
+Bengaluru Garments Ltd,S117-GRE-L,401,7,20
+Bengaluru Garments Ltd,S117-GRE-XL,401,7,50
+Bengaluru Garments Ltd,S117-GRE-XXL,401,21,20
+Bengaluru Garments Ltd,S117-GRE-3XL,401,14,20
+Bengaluru Garments Ltd,S117-GRE-4XL,401,21,50
+Bengaluru Garments Ltd,S117-GRE-5XL,401,10,30
+Bengaluru Garments Ltd,S117-BEI-M,401,14,20
+Bengaluru Garments Ltd,S117-BEI-L,401,14,20
+Bengaluru Garments Ltd,S117-BEI-XL,401,10,50
+Bengaluru Garments Ltd,S117-BEI-XXL,401,14,20
+Bengaluru Garments Ltd,S117-BEI-3XL,401,10,30
+Bengaluru Garments Ltd,S117-BEI-4XL,401,21,50
+Bengaluru Garments Ltd,S117-BEI-5XL,401,21,50
+Ludhiana Woollens,S122-NAV-M,929,21,20
+Ludhiana Woollens,S122-NAV-L,929,21,50
+Ludhiana Woollens,S122-NAV-XL,929,21,30
+Ludhiana Woollens,S122-NAV-XXL,929,21,20
+Ludhiana Woollens,S122-NAV-3XL,929,7,30
+Ludhiana Woollens,S122-NAV-4XL,929,10,20
+Ludhiana Woollens,S122-NAV-5XL,929,10,30
+Ludhiana Woollens,S122-BLA-M,929,10,30
+Ludhiana Woollens,S122-BLA-L,929,21,50
+Ludhiana Woollens,S122-BLA-XL,929,7,30
+Ludhiana Woollens,S122-BLA-XXL,929,7,50
+Ludhiana Woollens,S122-BLA-3XL,929,21,20
+Ludhiana Woollens,S122-BLA-4XL,929,14,50
+Ludhiana Woollens,S122-BLA-5XL,929,21,20
+Tiruppur Knit Mills,S127-NAV-M,573,21,30
+Tiruppur Knit Mills,S127-NAV-L,573,21,30
+Tiruppur Knit Mills,S127-NAV-XL,573,21,30
+Tiruppur Knit Mills,S127-NAV-XXL,573,14,20
+Tiruppur Knit Mills,S127-NAV-3XL,573,21,20
+Tiruppur Knit Mills,S127-NAV-4XL,573,14,50
+Tiruppur Knit Mills,S127-NAV-5XL,573,7,20
+Tiruppur Knit Mills,S127-WHI-M,573,21,20
+Tiruppur Knit Mills,S127-WHI-L,573,10,30
+Tiruppur Knit Mills,S127-WHI-XL,573,10,50
+Tiruppur Knit Mills,S127-WHI-XXL,573,10,50
+Tiruppur Knit Mills,S127-WHI-3XL,573,10,30
+Tiruppur Knit Mills,S127-WHI-4XL,573,7,30
+Tiruppur Knit Mills,S127-WHI-5XL,573,7,30
+Tiruppur Knit Mills,S134-BLA-M,649,10,20
+Tiruppur Knit Mills,S134-BLA-L,649,10,30
+Tiruppur Knit Mills,S134-BLA-XL,649,21,20
+Tiruppur Knit Mills,S134-BLA-XXL,649,7,30
+Tiruppur Knit Mills,S134-BLA-3XL,649,14,50
+Tiruppur Knit Mills,S134-BLA-4XL,649,10,50
+Tiruppur Knit Mills,S134-BLA-5XL,649,7,50
+Tiruppur Knit Mills,S134-BEI-M,649,21,50
+Tiruppur Knit Mills,S134-BEI-L,649,21,30
+Tiruppur Knit Mills,S134-BEI-XL,649,10,50
+Tiruppur Knit Mills,S134-BEI-XXL,649,7,50
+Tiruppur Knit Mills,S134-BEI-3XL,649,21,20
+Tiruppur Knit Mills,S134-BEI-4XL,649,10,20
+Tiruppur Knit Mills,S134-BEI-5XL,649,10,20
+Ludhiana Woollens,S138-BEI-M,888,10,30
+Ludhiana Woollens,S138-BEI-L,888,10,50
+Ludhiana Woollens,S138-BEI-XL,888,21,20
+Ludhiana Woollens,S138-BEI-XXL,888,21,20
+Ludhiana Woollens,S138-BEI-3XL,888,10,30
+Ludhiana Woollens,S138-BEI-4XL,888,14,50
+Ludhiana Woollens,S138-BEI-5XL,888,7,30
+Ludhiana Woollens,S138-BLA-M,888,7,50
+Ludhiana Woollens,S138-BLA-L,888,7,50
+Ludhiana Woollens,S138-BLA-XL,888,21,30
+Ludhiana Woollens,S138-BLA-XXL,888,7,50
+Ludhiana Woollens,S138-BLA-3XL,888,21,50
+Ludhiana Woollens,S138-BLA-4XL,888,14,30
+Ludhiana Woollens,S138-BLA-5XL,888,7,30
+Ludhiana Woollens,S142-NAV-M,735,10,30
+Ludhiana Woollens,S142-NAV-L,735,21,50
+Ludhiana Woollens,S142-NAV-XL,735,21,30
+Ludhiana Woollens,S142-NAV-XXL,735,10,20
+Ludhiana Woollens,S142-NAV-3XL,735,10,30
+Ludhiana Woollens,S142-NAV-4XL,735,7,30
+Ludhiana Woollens,S142-NAV-5XL,735,10,50
+Ludhiana Woollens,S142-SKY-M,735,7,30
+Ludhiana Woollens,S142-SKY-L,735,7,30
+Ludhiana Woollens,S142-SKY-XL,735,14,20
+Ludhiana Woollens,S142-SKY-XXL,735,21,50
+Ludhiana Woollens,S142-SKY-3XL,735,10,30
+Ludhiana Woollens,S142-SKY-4XL,735,10,30
+Ludhiana Woollens,S142-SKY-5XL,735,14,20
+Tiruppur Knit Mills,S149-WHI-M,757,21,50
+Tiruppur Knit Mills,S149-WHI-L,757,10,50
+Tiruppur Knit Mills,S149-WHI-XL,757,14,30
+Tiruppur Knit Mills,S149-WHI-XXL,757,21,50
+Tiruppur Knit Mills,S149-WHI-3XL,757,10,30
+Tiruppur Knit Mills,S149-WHI-4XL,757,10,30
+Tiruppur Knit Mills,S149-WHI-5XL,757,10,30
+Tiruppur Knit Mills,S149-MAR-M,757,7,20
+Tiruppur Knit Mills,S149-MAR-L,757,10,30
+Tiruppur Knit Mills,S149-MAR-XL,757,7,30
+Tiruppur Knit Mills,S149-MAR-XXL,757,7,30
+Tiruppur Knit Mills,S149-MAR-3XL,757,10,20
+Tiruppur Knit Mills,S149-MAR-4XL,757,21,30
+Tiruppur Knit Mills,S149-MAR-5XL,757,21,30
+Tiruppur Knit Mills,S156-BEI-M,646,21,30
+Tiruppur Knit Mills,S156-BEI-L,646,14,50
+Tiruppur Knit Mills,S156-BEI-XL,646,7,50
+Tiruppur Knit Mills,S156-BEI-XXL,646,7,50
+Tiruppur Knit Mills,S156-BEI-3XL,646,10,50
+Tiruppur Knit Mills,S156-BEI-4XL,646,7,30
+Tiruppur Knit Mills,S156-BEI-5XL,646,14,50
+Tiruppur Knit Mills,S156-GRE-M,646,10,20
+Tiruppur Knit Mills,S156-GRE-L,646,7,50
+Tiruppur Knit Mills,S156-GRE-XL,646,10,20
+Tiruppur Knit Mills,S156-GRE-XXL,646,21,50
+Tiruppur Knit Mills,S156-GRE-3XL,646,7,30
+Tiruppur Knit Mills,S156-GRE-4XL,646,21,50
+Tiruppur Knit Mills,S156-GRE-5XL,646,21,50
+Tiruppur Knit Mills,S164-GRE-M,1285,10,50
+Tiruppur Knit Mills,S164-GRE-L,1285,7,30
+Tiruppur Knit Mills,S164-GRE-XL,1285,10,50
+Tiruppur Knit Mills,S164-GRE-XXL,1285,7,30
+Tiruppur Knit Mills,S164-GRE-3XL,1285,21,20
+Tiruppur Knit Mills,S164-GRE-4XL,1285,14,20
+Tiruppur Knit Mills,S164-GRE-5XL,1285,14,30
+Tiruppur Knit Mills,S164-NAV-M,1285,10,30
+Tiruppur Knit Mills,S164-NAV-L,1285,10,30
+Tiruppur Knit Mills,S164-NAV-XL,1285,21,30
+Tiruppur Knit Mills,S164-NAV-XXL,1285,21,20
+Tiruppur Knit Mills,S164-NAV-3XL,1285,21,20
+Tiruppur Knit Mills,S164-NAV-4XL,1285,14,50
+Tiruppur Knit Mills,S164-NAV-5XL,1285,10,50
+Arvind Apparel Sourcing,S167-MAR-M,722,21,20
+Arvind Apparel Sourcing,S167-MAR-L,722,14,20
+Arvind Apparel Sourcing,S167-MAR-XL,722,21,30
+Arvind Apparel Sourcing,S167-MAR-XXL,722,10,20
+Arvind Apparel Sourcing,S167-MAR-3XL,722,14,20
+Arvind Apparel Sourcing,S167-MAR-4XL,722,7,50
+Arvind Apparel Sourcing,S167-MAR-5XL,722,14,50
+Arvind Apparel Sourcing,S167-BEI-M,722,21,50
+Arvind Apparel Sourcing,S167-BEI-L,722,21,50
+Arvind Apparel Sourcing,S167-BEI-XL,722,7,50
+Arvind Apparel Sourcing,S167-BEI-XXL,722,7,50
+Arvind Apparel Sourcing,S167-BEI-3XL,722,21,20
+Arvind Apparel Sourcing,S167-BEI-4XL,722,21,20
+Arvind Apparel Sourcing,S167-BEI-5XL,722,21,20
+Ludhiana Woollens,S173-BEI-M,1314,7,20
+Ludhiana Woollens,S173-BEI-L,1314,7,30
+Ludhiana Woollens,S173-BEI-XL,1314,10,50
+Ludhiana Woollens,S173-BEI-XXL,1314,14,20
+Ludhiana Woollens,S173-BEI-3XL,1314,7,20
+Ludhiana Woollens,S173-BEI-4XL,1314,10,30
+Ludhiana Woollens,S173-BEI-5XL,1314,7,50
+Ludhiana Woollens,S173-WHI-M,1314,14,50
+Ludhiana Woollens,S173-WHI-L,1314,10,30
+Ludhiana Woollens,S173-WHI-XL,1314,21,20
+Ludhiana Woollens,S173-WHI-XXL,1314,10,20
+Ludhiana Woollens,S173-WHI-3XL,1314,10,30
+Ludhiana Woollens,S173-WHI-4XL,1314,7,50
+Ludhiana Woollens,S173-WHI-5XL,1314,14,30
+Arvind Apparel Sourcing,S178-MAR-M,307,21,30
+Arvind Apparel Sourcing,S178-MAR-L,307,10,20
+Arvind Apparel Sourcing,S178-MAR-XL,307,7,30
+Arvind Apparel Sourcing,S178-MAR-XXL,307,14,50
+Arvind Apparel Sourcing,S178-MAR-3XL,307,7,20
+Arvind Apparel Sourcing,S178-MAR-4XL,307,10,50
+Arvind Apparel Sourcing,S178-MAR-5XL,307,21,20
+Arvind Apparel Sourcing,S178-BEI-M,307,14,20
+Arvind Apparel Sourcing,S178-BEI-L,307,7,50
+Arvind Apparel Sourcing,S178-BEI-XL,307,10,50
+Arvind Apparel Sourcing,S178-BEI-XXL,307,7,20
+Arvind Apparel Sourcing,S178-BEI-3XL,307,14,30
+Arvind Apparel Sourcing,S178-BEI-4XL,307,21,30
+Arvind Apparel Sourcing,S178-BEI-5XL,307,7,20
+Surat Textile House,S186-MAR-M,556,14,50
+Surat Textile House,S186-MAR-L,556,7,30
+Surat Textile House,S186-MAR-XL,556,10,50
+Surat Textile House,S186-MAR-XXL,556,7,50
+Surat Textile House,S186-MAR-3XL,556,21,30
+Surat Textile House,S186-MAR-4XL,556,10,30
+Surat Textile House,S186-MAR-5XL,556,7,20
+Surat Textile House,S186-GRE-M,556,14,30
+Surat Textile House,S186-GRE-L,556,7,50
+Surat Textile House,S186-GRE-XL,556,10,20
+Surat Textile House,S186-GRE-XXL,556,14,20
+Surat Textile House,S186-GRE-3XL,556,10,30
+Surat Textile House,S186-GRE-4XL,556,14,30
+Surat Textile House,S186-GRE-5XL,556,10,20
+Tiruppur Knit Mills,S194-SKY-M,683,14,30
+Tiruppur Knit Mills,S194-SKY-L,683,7,30
+Tiruppur Knit Mills,S194-SKY-XL,683,21,20
+Tiruppur Knit Mills,S194-SKY-XXL,683,21,20
+Tiruppur Knit Mills,S194-SKY-3XL,683,10,30
+Tiruppur Knit Mills,S194-SKY-4XL,683,21,50
+Tiruppur Knit Mills,S194-SKY-5XL,683,7,30
+Tiruppur Knit Mills,S194-BEI-M,683,21,20
+Tiruppur Knit Mills,S194-BEI-L,683,7,20
+Tiruppur Knit Mills,S194-BEI-XL,683,14,50
+Tiruppur Knit Mills,S194-BEI-XXL,683,10,20
+Tiruppur Knit Mills,S194-BEI-3XL,683,21,20
+Tiruppur Knit Mills,S194-BEI-4XL,683,21,30
+Tiruppur Knit Mills,S194-BEI-5XL,683,21,20
+Bengaluru Garments Ltd,S199-GRE-M,322,10,30
+Bengaluru Garments Ltd,S199-GRE-L,322,14,30
+Bengaluru Garments Ltd,S199-GRE-XL,322,7,20
+Bengaluru Garments Ltd,S199-GRE-XXL,322,7,30
+Bengaluru Garments Ltd,S199-GRE-3XL,322,14,20
+Bengaluru Garments Ltd,S199-GRE-4XL,322,14,20
+Bengaluru Garments Ltd,S199-GRE-5XL,322,21,20
+Bengaluru Garments Ltd,S199-NAV-M,322,21,50
+Bengaluru Garments Ltd,S199-NAV-L,322,14,50
+Bengaluru Garments Ltd,S199-NAV-XL,322,21,30
+Bengaluru Garments Ltd,S199-NAV-XXL,322,7,20
+Bengaluru Garments Ltd,S199-NAV-3XL,322,14,50
+Bengaluru Garments Ltd,S199-NAV-4XL,322,14,30
+Bengaluru Garments Ltd,S199-NAV-5XL,322,7,30
+Surat Textile House,S203-BLA-M,358,7,20
+Surat Textile House,S203-BLA-L,358,14,20
+Surat Textile House,S203-BLA-XL,358,21,30
+Surat Textile House,S203-BLA-XXL,358,10,50
+Surat Textile House,S203-BLA-3XL,358,21,20
+Surat Textile House,S203-BLA-4XL,358,21,30
+Surat Textile House,S203-BLA-5XL,358,7,50
+Surat Textile House,S203-NAV-M,358,14,50
+Surat Textile House,S203-NAV-L,358,14,30
+Surat Textile House,S203-NAV-XL,358,14,30
+Surat Textile House,S203-NAV-XXL,358,14,30
+Surat Textile House,S203-NAV-3XL,358,14,20
+Surat Textile House,S203-NAV-4XL,358,14,50
+Surat Textile House,S203-NAV-5XL,358,14,20
+Ludhiana Woollens,S209-NAV-M,742,7,30
+Ludhiana Woollens,S209-NAV-L,742,14,30
+Ludhiana Woollens,S209-NAV-XL,742,21,20
+Ludhiana Woollens,S209-NAV-XXL,742,10,30
+Ludhiana Woollens,S209-NAV-3XL,742,14,20
+Ludhiana Woollens,S209-NAV-4XL,742,7,50
+Ludhiana Woollens,S209-NAV-5XL,742,7,20
+Ludhiana Woollens,S209-GRE-M,742,7,30
+Ludhiana Woollens,S209-GRE-L,742,14,50
+Ludhiana Woollens,S209-GRE-XL,742,10,50
+Ludhiana Woollens,S209-GRE-XXL,742,7,50
+Ludhiana Woollens,S209-GRE-3XL,742,10,50
+Ludhiana Woollens,S209-GRE-4XL,742,10,20
+Ludhiana Woollens,S209-GRE-5XL,742,14,20
+Arvind Apparel Sourcing,S213-OLI-M,562,7,30
+Arvind Apparel Sourcing,S213-OLI-L,562,14,50
+Arvind Apparel Sourcing,S213-OLI-XL,562,14,50
+Arvind Apparel Sourcing,S213-OLI-XXL,562,21,20
+Arvind Apparel Sourcing,S213-OLI-3XL,562,21,30
+Arvind Apparel Sourcing,S213-OLI-4XL,562,21,20
+Arvind Apparel Sourcing,S213-OLI-5XL,562,10,30
+Arvind Apparel Sourcing,S213-MAR-M,562,10,20
+Arvind Apparel Sourcing,S213-MAR-L,562,14,30
+Arvind Apparel Sourcing,S213-MAR-XL,562,10,30
+Arvind Apparel Sourcing,S213-MAR-XXL,562,7,50
+Arvind Apparel Sourcing,S213-MAR-3XL,562,14,20
+Arvind Apparel Sourcing,S213-MAR-4XL,562,21,30
+Arvind Apparel Sourcing,S213-MAR-5XL,562,7,30
+Arvind Apparel Sourcing,S216-BLA-M,349,10,50
+Arvind Apparel Sourcing,S216-BLA-L,349,10,30
+Arvind Apparel Sourcing,S216-BLA-XL,349,7,20
+Arvind Apparel Sourcing,S216-BLA-XXL,349,21,30
+Arvind Apparel Sourcing,S216-BLA-3XL,349,21,30
+Arvind Apparel Sourcing,S216-BLA-4XL,349,10,20
+Arvind Apparel Sourcing,S216-BLA-5XL,349,14,20
+Arvind Apparel Sourcing,S216-SKY-M,349,10,30
+Arvind Apparel Sourcing,S216-SKY-L,349,7,50
+Arvind Apparel Sourcing,S216-SKY-XL,349,21,50
+Arvind Apparel Sourcing,S216-SKY-XXL,349,21,50
+Arvind Apparel Sourcing,S216-SKY-3XL,349,10,20
+Arvind Apparel Sourcing,S216-SKY-4XL,349,10,50
+Arvind Apparel Sourcing,S216-SKY-5XL,349,21,50
+Ludhiana Woollens,S221-OLI-M,704,21,30
+Ludhiana Woollens,S221-OLI-L,704,7,30
+Ludhiana Woollens,S221-OLI-XL,704,10,30
+Ludhiana Woollens,S221-OLI-XXL,704,7,50
+Ludhiana Woollens,S221-OLI-3XL,704,7,50
+Ludhiana Woollens,S221-OLI-4XL,704,21,30
+Ludhiana Woollens,S221-OLI-5XL,704,10,20
+Ludhiana Woollens,S221-SKY-M,704,21,50
+Ludhiana Woollens,S221-SKY-L,704,10,30
+Ludhiana Woollens,S221-SKY-XL,704,10,20
+Ludhiana Woollens,S221-SKY-XXL,704,21,50
+Ludhiana Woollens,S221-SKY-3XL,704,14,30
+Ludhiana Woollens,S221-SKY-4XL,704,10,30
+Ludhiana Woollens,S221-SKY-5XL,704,14,20
+Surat Textile House,S228-SKY-M,1339,21,50
+Surat Textile House,S228-SKY-L,1339,14,30
+Surat Textile House,S228-SKY-XL,1339,21,50
+Surat Textile House,S228-SKY-XXL,1339,10,50
+Surat Textile House,S228-SKY-3XL,1339,21,30
+Surat Textile House,S228-SKY-4XL,1339,7,50
+Surat Textile House,S228-SKY-5XL,1339,21,30
+Surat Textile House,S228-BEI-M,1339,14,50
+Surat Textile House,S228-BEI-L,1339,10,20
+Surat Textile House,S228-BEI-XL,1339,10,30
+Surat Textile House,S228-BEI-XXL,1339,10,50
+Surat Textile House,S228-BEI-3XL,1339,14,20
+Surat Textile House,S228-BEI-4XL,1339,14,50
+Surat Textile House,S228-BEI-5XL,1339,14,20
+Bengaluru Garments Ltd,S232-GRE-M,390,21,30
+Bengaluru Garments Ltd,S232-GRE-L,390,7,50
+Bengaluru Garments Ltd,S232-GRE-XL,390,10,50
+Bengaluru Garments Ltd,S232-GRE-XXL,390,7,50
+Bengaluru Garments Ltd,S232-GRE-3XL,390,10,50
+Bengaluru Garments Ltd,S232-GRE-4XL,390,10,20
+Bengaluru Garments Ltd,S232-GRE-5XL,390,10,50
+Bengaluru Garments Ltd,S232-OLI-M,390,14,50
+Bengaluru Garments Ltd,S232-OLI-L,390,10,30
+Bengaluru Garments Ltd,S232-OLI-XL,390,21,50
+Bengaluru Garments Ltd,S232-OLI-XXL,390,10,30
+Bengaluru Garments Ltd,S232-OLI-3XL,390,10,50
+Bengaluru Garments Ltd,S232-OLI-4XL,390,7,20
+Bengaluru Garments Ltd,S232-OLI-5XL,390,10,30
+Ludhiana Woollens,S239-WHI-M,1339,21,20
+Ludhiana Woollens,S239-WHI-L,1339,14,50
+Ludhiana Woollens,S239-WHI-XL,1339,14,50
+Ludhiana Woollens,S239-WHI-XXL,1339,21,50
+Ludhiana Woollens,S239-WHI-3XL,1339,10,20
+Ludhiana Woollens,S239-WHI-4XL,1339,10,50
+Ludhiana Woollens,S239-WHI-5XL,1339,7,50
+Ludhiana Woollens,S239-SKY-M,1339,14,20
+Ludhiana Woollens,S239-SKY-L,1339,7,50
+Ludhiana Woollens,S239-SKY-XL,1339,14,20
+Ludhiana Woollens,S239-SKY-XXL,1339,10,50
+Ludhiana Woollens,S239-SKY-3XL,1339,7,50
+Ludhiana Woollens,S239-SKY-4XL,1339,21,20
+Ludhiana Woollens,S239-SKY-5XL,1339,7,20
+Surat Textile House,S247-SKY-M,724,7,50
+Surat Textile House,S247-SKY-L,724,7,50
+Surat Textile House,S247-SKY-XL,724,21,50
+Surat Textile House,S247-SKY-XXL,724,7,50
+Surat Textile House,S247-SKY-3XL,724,14,50
+Surat Textile House,S247-SKY-4XL,724,21,30
+Surat Textile House,S247-SKY-5XL,724,7,50
+Surat Textile House,S247-OLI-M,724,14,30
+Surat Textile House,S247-OLI-L,724,10,30
+Surat Textile House,S247-OLI-XL,724,14,50
+Surat Textile House,S247-OLI-XXL,724,10,30
+Surat Textile House,S247-OLI-3XL,724,7,50
+Surat Textile House,S247-OLI-4XL,724,21,50
+Surat Textile House,S247-OLI-5XL,724,21,30
+Ludhiana Woollens,S252-BLA-M,776,21,20
+Ludhiana Woollens,S252-BLA-L,776,10,20
+Ludhiana Woollens,S252-BLA-XL,776,21,50
+Ludhiana Woollens,S252-BLA-XXL,776,10,20
+Ludhiana Woollens,S252-BLA-3XL,776,7,30
+Ludhiana Woollens,S252-BLA-4XL,776,14,30
+Ludhiana Woollens,S252-BLA-5XL,776,21,30
+Ludhiana Woollens,S252-BEI-M,776,21,50
+Ludhiana Woollens,S252-BEI-L,776,14,50
+Ludhiana Woollens,S252-BEI-XL,776,10,50
+Ludhiana Woollens,S252-BEI-XXL,776,10,20
+Ludhiana Woollens,S252-BEI-3XL,776,7,20
+Ludhiana Woollens,S252-BEI-4XL,776,7,50
+Ludhiana Woollens,S252-BEI-5XL,776,14,20
+Tiruppur Knit Mills,S258-WHI-M,744,21,20
+Tiruppur Knit Mills,S258-WHI-L,744,10,20
+Tiruppur Knit Mills,S258-WHI-XL,744,14,20
+Tiruppur Knit Mills,S258-WHI-XXL,744,21,30
+Tiruppur Knit Mills,S258-WHI-3XL,744,14,20
+Tiruppur Knit Mills,S258-WHI-4XL,744,21,20
+Tiruppur Knit Mills,S258-WHI-5XL,744,10,30
+Tiruppur Knit Mills,S258-SKY-M,744,7,20
+Tiruppur Knit Mills,S258-SKY-L,744,7,50
+Tiruppur Knit Mills,S258-SKY-XL,744,7,20
+Tiruppur Knit Mills,S258-SKY-XXL,744,21,30
+Tiruppur Knit Mills,S258-SKY-3XL,744,14,20
+Tiruppur Knit Mills,S258-SKY-4XL,744,21,30
+Tiruppur Knit Mills,S258-SKY-5XL,744,21,30
+Bengaluru Garments Ltd,S101-NAV-M,722,14,30
+Bengaluru Garments Ltd,S101-NAV-L,722,14,30
+Bengaluru Garments Ltd,S101-NAV-XL,722,14,30
+Bengaluru Garments Ltd,S101-NAV-XXL,722,14,30
+Bengaluru Garments Ltd,S101-NAV-3XL,722,14,30
+Bengaluru Garments Ltd,S101-NAV-4XL,722,14,30
+Bengaluru Garments Ltd,S101-NAV-5XL,722,14,30
+Bengaluru Garments Ltd,S101-WHI-M,722,14,30
+Bengaluru Garments Ltd,S101-WHI-L,722,14,30
+Bengaluru Garments Ltd,S101-WHI-XL,722,14,30
+Bengaluru Garments Ltd,S101-WHI-XXL,722,14,30
+Bengaluru Garments Ltd,S101-WHI-3XL,722,14,30
+Bengaluru Garments Ltd,S101-WHI-4XL,722,14,30
+Bengaluru Garments Ltd,S101-WHI-5XL,722,14,30
+Surat Textile House,S214-OLI-M,1610,7,20
+Surat Textile House,S214-OLI-L,1610,14,30
+Surat Textile House,S214-OLI-XL,1610,10,30
+Surat Textile House,S214-OLI-XXL,1610,21,30
+Surat Textile House,S214-OLI-3XL,1610,14,30
+Surat Textile House,S214-OLI-4XL,1610,10,20
+Surat Textile House,S214-OLI-5XL,1610,14,50
+Surat Textile House,S214-BLA-M,1610,21,20
+Surat Textile House,S214-BLA-L,1610,14,20
+Surat Textile House,S214-BLA-XL,1610,10,20
+Surat Textile House,S214-BLA-XXL,1610,7,30
+Surat Textile House,S214-BLA-3XL,1610,7,50
+Surat Textile House,S214-BLA-4XL,1610,14,30
+Surat Textile House,S214-BLA-5XL,1610,10,20
+Tiruppur Knit Mills,S305-BEI-M,868,7,20
+Tiruppur Knit Mills,S305-BEI-L,868,10,20
+Tiruppur Knit Mills,S305-BEI-XL,868,7,20
+Tiruppur Knit Mills,S305-BEI-XXL,868,21,30
+Tiruppur Knit Mills,S305-BEI-3XL,868,7,50
+Tiruppur Knit Mills,S305-BEI-4XL,868,21,20
+Tiruppur Knit Mills,S305-BEI-5XL,868,14,20
+Tiruppur Knit Mills,S305-WHI-M,868,7,20
+Tiruppur Knit Mills,S305-WHI-L,868,10,20
+Tiruppur Knit Mills,S305-WHI-XL,868,21,20
+Tiruppur Knit Mills,S305-WHI-XXL,868,21,50
+Tiruppur Knit Mills,S305-WHI-3XL,868,10,30
+Tiruppur Knit Mills,S305-WHI-4XL,868,14,30
+Tiruppur Knit Mills,S305-WHI-5XL,868,10,30
+Tiruppur Knit Mills,S120-BLA-M,397,10,50
+Tiruppur Knit Mills,S120-BLA-L,397,10,50
+Tiruppur Knit Mills,S120-BLA-XL,397,10,50
+Tiruppur Knit Mills,S120-BLA-XXL,397,10,50
+Tiruppur Knit Mills,S120-BLA-3XL,397,10,50
+Tiruppur Knit Mills,S120-BLA-4XL,397,10,50
+Tiruppur Knit Mills,S120-BLA-5XL,397,10,50
+Tiruppur Knit Mills,S120-NAV-M,397,10,50
+Tiruppur Knit Mills,S120-NAV-L,397,10,50
+Tiruppur Knit Mills,S120-NAV-XL,397,10,50
+Tiruppur Knit Mills,S120-NAV-XXL,397,10,50
+Tiruppur Knit Mills,S120-NAV-3XL,397,10,50
+Tiruppur Knit Mills,S120-NAV-4XL,397,10,50
+Tiruppur Knit Mills,S120-NAV-5XL,397,10,50
+Tiruppur Knit Mills,S410-KHA-M,692,21,50
+Tiruppur Knit Mills,S410-KHA-L,692,7,50
+Tiruppur Knit Mills,S410-KHA-XL,692,14,50
+Tiruppur Knit Mills,S410-KHA-XXL,692,7,30
+Tiruppur Knit Mills,S410-KHA-3XL,692,10,30
+Tiruppur Knit Mills,S410-KHA-4XL,692,21,20
+Tiruppur Knit Mills,S410-KHA-5XL,692,10,20
+Tiruppur Knit Mills,S410-NAV-M,692,10,50
+Tiruppur Knit Mills,S410-NAV-L,692,14,50
+Tiruppur Knit Mills,S410-NAV-XL,692,7,50
+Tiruppur Knit Mills,S410-NAV-XXL,692,14,30
+Tiruppur Knit Mills,S410-NAV-3XL,692,7,30
+Tiruppur Knit Mills,S410-NAV-4XL,692,21,50
+Tiruppur Knit Mills,S410-NAV-5XL,692,14,30
+Tiruppur Knit Mills,S500-CHA-M,2361,14,20
+Tiruppur Knit Mills,S500-CHA-L,2361,21,50
+Tiruppur Knit Mills,S500-CHA-XL,2361,10,30
+Tiruppur Knit Mills,S500-CHA-XXL,2361,14,50
+Tiruppur Knit Mills,S500-CHA-3XL,2361,14,20
+Tiruppur Knit Mills,S500-CHA-4XL,2361,14,30
+Tiruppur Knit Mills,S500-CHA-5XL,2361,7,30
+Tiruppur Knit Mills,S150-WHI-M,243,10,20
+Tiruppur Knit Mills,S150-WHI-L,243,7,20
+Tiruppur Knit Mills,S150-WHI-XL,243,14,50
+Tiruppur Knit Mills,S150-WHI-XXL,243,10,20
+Tiruppur Knit Mills,S150-WHI-3XL,243,21,50
+Tiruppur Knit Mills,S150-WHI-4XL,243,7,30
+Tiruppur Knit Mills,S150-WHI-5XL,243,7,50
+Tiruppur Knit Mills,S150-GRE-M,243,21,20
+Tiruppur Knit Mills,S150-GRE-L,243,10,20
+Tiruppur Knit Mills,S150-GRE-XL,243,7,50
+Tiruppur Knit Mills,S150-GRE-XXL,243,14,20
+Tiruppur Knit Mills,S150-GRE-3XL,243,7,30
+Tiruppur Knit Mills,S150-GRE-4XL,243,21,20
+Tiruppur Knit Mills,S150-GRE-5XL,243,7,30
+Tiruppur Knit Mills,S150-BLA-M,243,7,20
+Tiruppur Knit Mills,S150-BLA-L,243,10,30
+Tiruppur Knit Mills,S150-BLA-XL,243,21,20
+Tiruppur Knit Mills,S150-BLA-XXL,243,10,20
+Tiruppur Knit Mills,S150-BLA-3XL,243,21,20
+Tiruppur Knit Mills,S150-BLA-4XL,243,21,30
+Tiruppur Knit Mills,S150-BLA-5XL,243,7,50

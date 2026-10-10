@@ -145,6 +145,8 @@ export const api = {
   async fetchInventory(filters = {}) {
     const query = new URLSearchParams();
     if (filters.store && filters.store !== 'All Stores') query.set('store', filters.store);
+    if (filters.product && filters.product !== 'All Products') query.set('product', filters.product);
+    if (filters.colour && filters.colour !== 'All Colours') query.set('colour', filters.colour);
     if (filters.size && filters.size !== 'All Sizes') query.set('size', filters.size);
     if (filters.category && filters.category !== 'All Categories') query.set('category', filters.category);
     if (filters.status && filters.status !== 'All Statuses') query.set('status', filters.status);
@@ -163,6 +165,12 @@ export const api = {
 
     if (filters.store && filters.store !== 'All Stores') {
       result = result.filter(item => item.storeName === filters.store || item.storeId === filters.store);
+    }
+    if (filters.product && filters.product !== 'All Products') {
+      result = result.filter(item => (item.productName || item.name) === filters.product);
+    }
+    if (filters.colour && filters.colour !== 'All Colours') {
+      result = result.filter(item => item.colour?.toLowerCase() === filters.colour.toLowerCase());
     }
     if (filters.size && filters.size !== 'All Sizes') {
       result = result.filter(item => item.size === filters.size);

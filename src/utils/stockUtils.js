@@ -3,8 +3,8 @@
  * Provides reusable threshold evaluation, status color tokens, and sorting helpers.
  */
 
-export const DEFAULT_MIN_THRESHOLD = 15;
-export const DEFAULT_MAX_THRESHOLD = 75;
+export const DEFAULT_MIN_THRESHOLD = 3;
+export const DEFAULT_MAX_THRESHOLD = 8;
 
 /**
  * Calculates stock status classification, colors, and badge metadata.

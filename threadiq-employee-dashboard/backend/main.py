@@ -1639,6 +1639,91 @@ async def reject_inventory_item(
     finally:
         conn.close()
 
+@app.put("/api/v1/inventory/{item_id}")
+async def update_inventory_item_qty(
+    item_id: str,
+    payload: dict = Body(...),
+    current_employee: Optional[dict] = Depends(get_optional_employee)
+):
+    """
+    Direct inventory stock update endpoint:
+    Updates available_quantity, persists audit record in inventory_history,
+    and broadcasts realtime SSE update to all connected dashboard sessions.
+    """
+    conn = get_db()
+    try:
+        cur = conn.execute("SELECT * FROM inventory WHERE inventory_id = ? OR sku = ?;", (item_id, item_id))
+        item = cur.fetchone()
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Inventory item '{item_id}' not found.")
+
+        new_qty = payload.get("quantityAvailable")
+        if new_qty is None:
+            new_qty = payload.get("availableQty")
+        if new_qty is None:
+            new_qty = payload.get("quantity")
+        if new_qty is None:
+            raise HTTPException(status_code=400, detail="Missing quantity field (quantityAvailable, availableQty, or quantity).")
+
+        new_qty = max(0, int(new_qty))
+        prev_qty = item["available_quantity"]
+        diff = new_qty - prev_qty
+        now_iso = datetime.now(timezone.utc).isoformat()
+        reason = payload.get("reason", "Manual Inventory Audit")
+
+        emp_id = current_employee["employee_id"] if current_employee else "SYSTEM_IMPORT"
+        emp_name = current_employee["name"] if current_employee else "Inventory Manager"
+        if payload.get("employeeId"):
+            c_chk = conn.execute("SELECT employee_id, name FROM employees WHERE LOWER(employee_id) = LOWER(?);", (str(payload["employeeId"]).strip(),)).fetchone()
+            if c_chk:
+                emp_id = c_chk["employee_id"]
+                emp_name = c_chk["name"]
+
+        conn.execute("""
+            UPDATE inventory
+            SET available_quantity = ?,
+                last_updated_timestamp = ?,
+                version = version + 1
+            WHERE inventory_id = ?;
+        """, (new_qty, now_iso, item["inventory_id"]))
+
+        conn.execute("""
+            INSERT INTO inventory_history (
+                store_id, product_id, product_name, colour, size, sku,
+                previous_quantity, quantity_change, new_quantity, update_type,
+                employee_id, employee_name, timestamp, remarks
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'COUNT', ?, ?, ?, ?);
+        """, (
+            item["store_id"], item["product_id"], item["product_name"],
+            item["colour"], item["size"], item["sku"],
+            prev_qty, diff, new_qty, emp_id, emp_name, now_iso, reason
+        ))
+
+        conn.commit()
+
+        await broadcaster.broadcast("inventory_update", {
+            "type": "INVENTORY_CHANGED",
+            "storeId": item["store_id"],
+            "inventoryId": item["inventory_id"],
+            "sku": item["sku"],
+            "size": item["size"],
+            "productName": item["product_name"],
+            "previousQuantity": prev_qty,
+            "newQuantity": new_qty,
+            "timestamp": now_iso
+        })
+
+        return {
+            "success": True,
+            "inventoryId": item["inventory_id"],
+            "sku": item["sku"],
+            "previousQuantity": prev_qty,
+            "newQuantity": new_qty,
+            "updatedAt": now_iso
+        }
+    finally:
+        conn.close()
+
 # ---------------------------------------------------------------------------
 # Server-Sent Events (SSE) Real-Time Stream
 # ---------------------------------------------------------------------------
@@ -1689,6 +1774,34 @@ def resolve_store(identifier: str, conn):
     ident = str(identifier).strip()
     ident_lower = ident.lower()
 
+    # Priority resolution for imported retail stores
+    imported_aliases = {
+        "jayanagar": "STORE_RET_JAYANAGAR",
+        "blr-jay": "STORE_RET_JAYANAGAR",
+        "store_ret_jayanagar": "STORE_RET_JAYANAGAR",
+        "rajajinagar": "STORE_RET_RAJAJINAGAR",
+        "blr-raj": "STORE_RET_RAJAJINAGAR",
+        "store_ret_rajajinagar": "STORE_RET_RAJAJINAGAR",
+        "whitefield": "STORE_RET_WHITEFIELD",
+        "blr-wfd": "STORE_RET_WHITEFIELD",
+        "store_ret_whitefield": "STORE_RET_WHITEFIELD",
+        "marathahalli": "STORE_RET_MARATHAHALLI",
+        "blr-mar": "STORE_RET_MARATHAHALLI",
+        "store_ret_marathahalli": "STORE_RET_MARATHAHALLI",
+        "yelahanka": "STORE_RET_YELAHANKA",
+        "blr-yel": "STORE_RET_YELAHANKA",
+        "store_ret_yelahanka": "STORE_RET_YELAHANKA",
+        "peenya wh": "STORE_RET_PEENYA_WH",
+        "peenya": "STORE_RET_PEENYA_WH",
+        "blr-pee-wh": "STORE_RET_PEENYA_WH",
+        "store_ret_peenya_wh": "STORE_RET_PEENYA_WH",
+    }
+    if ident_lower in imported_aliases:
+        cur = conn.execute("SELECT * FROM stores WHERE store_id = ?;", (imported_aliases[ident_lower],))
+        r = cur.fetchone()
+        if r:
+            return dict(r)
+
     # Priority alias mappings for Karnataka network
     if ident_lower in ("store-01", "blr-flag-01", "ka-blr-04", "brigade road", "brigade road flagship", "bengaluru central", "bengaluru", "blr", "store_ka_blr_01"):
         cur = conn.execute("SELECT * FROM stores WHERE store_id = 'STORE_KA_BLR_01';")
@@ -1703,7 +1816,8 @@ def resolve_store(identifier: str, conn):
             return dict(r)
 
     cur = conn.execute("""
-        SELECT store_id, store_code, store_name, city, address, zone, lat, lng
+        SELECT store_id, store_code, store_name, city, address, zone, lat, lng,
+               store_type, customer_profile, is_warehouse, is_imported
         FROM stores
         WHERE LOWER(store_id) = LOWER(?)
            OR LOWER(store_code) = LOWER(?)
@@ -1752,7 +1866,21 @@ def format_inventory_item(r: dict) -> dict:
         "Vintage Washed Heavyweight Tee": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80",
         "Essential Heavyweight Crew Neck": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&auto=format&fit=crop&q=80",
         "Performance Dry-Fit Athletic Tee": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&auto=format&fit=crop&q=80",
-        "Supima Relaxed Fit Tee": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&auto=format&fit=crop&q=80"
+        "Supima Relaxed Fit Tee": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&auto=format&fit=crop&q=80",
+        "Casual Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&auto=format&fit=crop&q=80",
+        "Oxford Shirt": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80",
+        "Check Shirt": "https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?w=600&auto=format&fit=crop&q=80",
+        "Cotton Crew Tee": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80",
+        "Cotton V-Neck Tee": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&auto=format&fit=crop&q=80",
+        "Polo T-Shirt": "https://images.unsplash.com/photo-1625910513413-568bfbeac4b3?w=600&auto=format&fit=crop&q=80",
+        "Chinos": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&auto=format&fit=crop&q=80",
+        "Formal Trousers": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&auto=format&fit=crop&q=80",
+        "Cargo Pants": "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80",
+        "Linen Kurta": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80",
+        "Cotton Kurta": "https://images.unsplash.com/photo-1583391733975-0d2963162391?w=600&auto=format&fit=crop&q=80",
+        "Bomber Jacket": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&auto=format&fit=crop&q=80",
+        "Quilted Jacket": "https://images.unsplash.com/photo-1544441893-675973e31985?w=600&auto=format&fit=crop&q=80",
+        "Formal Blazer": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80"
     }
     img_url = product_images.get(r["product_name"], "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80")
 
@@ -1763,7 +1891,7 @@ def format_inventory_item(r: dict) -> dict:
             "type": "Transfer",
             "title": f"Transfer rebalance for {r['product_name']} ({r['size']})",
             "proposedQty": r.get("active_transfer_qty") or max(10, thold - qty),
-            "sourceStore": r.get("active_transfer_source_name") or "Mysuru Central",
+            "sourceStore": r.get("active_transfer_source_name") or "Peenya WH",
             "destStore": r["store_name"]
         }
 
@@ -1778,9 +1906,9 @@ def format_inventory_item(r: dict) -> dict:
         "name": r["product_name"],
         "category": r["category"],
         "colour": r["colour"],
-        "colourHex": r["colour_hex"],
-        "hexColour": r["colour_hex"],
-        "colourId": r["colour_id"],
+        "colourHex": r.get("colour_hex") or "#64748b",
+        "hexColour": r.get("colour_hex") or "#64748b",
+        "colourId": r.get("colour_id") or r["colour"].lower().replace(" ", "_"),
         "size": r["size"],
         "sku": r["sku"],
         "skuCode": r["sku"],
@@ -1792,8 +1920,12 @@ def format_inventory_item(r: dict) -> dict:
         "maxThreshold": thold * 5,
         "unitPrice": r["unit_price"],
         "price": r["unit_price"],
-        "dailySalesVelocity": r.get("daily_sales_velocity", 2.5),
-        "salesVelocityPerDay": r.get("daily_sales_velocity", 2.5),
+        "dailySalesVelocity": r.get("daily_sales_velocity", 0.1),
+        "salesVelocityPerDay": r.get("daily_sales_velocity", 0.1),
+        "ageing_days": r.get("ageing_days", 0),
+        "ageingDays": r.get("ageing_days", 0),
+        "is_imported": bool(r.get("is_imported", 0)),
+        "isImported": bool(r.get("is_imported", 0)),
         "lastUpdated": r["last_updated_timestamp"],
         "lastVerified": r["last_updated_timestamp"],
         "lastUpdatedBy": r["last_updated_by_employee_id"],
@@ -1815,10 +1947,15 @@ def get_all_inventory(
     size: Optional[str] = Query(None),
     sku: Optional[str] = Query(None),
     productId: Optional[str] = Query(None),
+    product: Optional[str] = Query(None),
+    productName: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
+    colour: Optional[str] = Query(None),
+    color: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    approvalStatus: Optional[str] = Query(None)
+    approvalStatus: Optional[str] = Query(None),
+    isImported: Optional[bool] = Query(None)
 ):
     """
     Returns authoritative inventory items from SQLite shared database.
@@ -1868,9 +2005,23 @@ def get_all_inventory(
             query += " AND (LOWER(i.product_id) = LOWER(?) OR LOWER(i.inventory_id) = LOWER(?))"
             params.extend([productId, productId])
 
+        selected_prod = product or productName
+        if selected_prod and selected_prod.upper() != "ALL" and selected_prod != "All Products":
+            query += " AND (LOWER(i.product_name) = LOWER(?) OR LOWER(i.product_id) = LOWER(?))"
+            params.extend([selected_prod, selected_prod])
+
         if category and category.upper() != "ALL" and category != "All Categories":
             query += " AND LOWER(i.category) = LOWER(?)"
             params.append(category)
+
+        selected_colour = colour or color
+        if selected_colour and selected_colour.upper() != "ALL" and selected_colour != "All Colours":
+            query += " AND LOWER(i.colour) = LOWER(?)"
+            params.append(selected_colour)
+
+        if isImported is not None:
+            query += " AND i.is_imported = ?"
+            params.append(1 if isImported else 0)
 
         if search and search.strip():
             q = f"%{search.strip().lower()}%"
@@ -1910,13 +2061,20 @@ def get_all_inventory(
 
 @app.get("/api/stores")
 @app.get("/api/v1/stores")
-def get_all_stores():
+def get_all_stores(isImported: Optional[bool] = Query(None)):
     """
-    Returns all 8 Karnataka retail hubs with live inventory aggregation metrics.
+    Returns store network with live inventory aggregation metrics.
+    Authoritative imported stores are prioritized first.
     """
     conn = get_db()
     try:
-        cur_stores = conn.execute("SELECT * FROM stores ORDER BY store_name ASC;")
+        query = "SELECT * FROM stores"
+        params = []
+        if isImported is not None:
+            query += " WHERE is_imported = ?"
+            params.append(1 if isImported else 0)
+        query += " ORDER BY is_imported DESC, is_warehouse ASC, store_name ASC;"
+        cur_stores = conn.execute(query, params)
         stores_list = [dict(s) for s in cur_stores.fetchall()]
 
         cur_inv = conn.execute("""
@@ -1977,6 +2135,14 @@ def get_all_stores():
                 "zone": s["zone"],
                 "lat": s.get("lat", 12.9716),
                 "lng": s.get("lng", 77.5946),
+                "storeType": s.get("store_type", "High street"),
+                "store_type": s.get("store_type", "High street"),
+                "customerProfile": s.get("customer_profile", ""),
+                "customer_profile": s.get("customer_profile", ""),
+                "isWarehouse": bool(s.get("is_warehouse", 0)),
+                "is_warehouse": bool(s.get("is_warehouse", 0)),
+                "isImported": bool(s.get("is_imported", 0)),
+                "is_imported": bool(s.get("is_imported", 0)),
                 "totalUnits": units,
                 "totalSkus": st["totalSkus"],
                 "capacityUsagePct": cap_pct,
@@ -1990,6 +2156,375 @@ def get_all_stores():
             })
 
         return result
+    finally:
+        conn.close()
+
+# ---------------------------------------------------------------------------
+# Authoritative Retail Catalog, Sales, Supplier, and PO Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/v1/products")
+def get_products():
+    """Returns authoritative product catalog, categories, colors, and sizes."""
+    conn = get_db()
+    try:
+        cur_p = conn.execute("SELECT * FROM products ORDER BY category ASC, product_name ASC, sku ASC;")
+        prods = [dict(r) for r in cur_p.fetchall()]
+
+        categories = sorted(list(set(p["category"] for p in prods)))
+        colours = sorted(list(set(p["colour"] for p in prods)))
+        size_order = ["M", "L", "XL", "XXL", "3XL", "4XL", "5XL"]
+        sizes = sorted(list(set(p["size"] for p in prods)), key=lambda s: size_order.index(s) if s in size_order else 99)
+        distinct_names = sorted(list(set(p["product_name"] for p in prods)))
+
+        return {
+            "products": prods,
+            "totalProducts": len(prods),
+            "distinctProductNames": distinct_names,
+            "categories": categories,
+            "colours": colours,
+            "sizes": sizes
+        }
+    finally:
+        conn.close()
+
+@app.get("/api/v1/sales/history")
+def get_sales_history(
+    sku: Optional[str] = Query(None),
+    product: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    store: Optional[str] = Query(None),
+    startDate: Optional[str] = Query(None),
+    endDate: Optional[str] = Query(None),
+    limit: int = Query(500, ge=1, le=15000)
+):
+    """Queries historical transactions from sales.csv with multi-dimensional filtering."""
+    conn = get_db()
+    try:
+        query = """
+            SELECT sa.*, p.product_name, p.category, p.colour, p.size, p.style
+            FROM sales sa
+            JOIN products p ON sa.sku = p.sku
+            WHERE 1=1
+        """
+        params = []
+        if sku:
+            query += " AND LOWER(sa.sku) = LOWER(?)"
+            params.append(sku)
+        if product:
+            query += " AND (LOWER(p.product_name) = LOWER(?) OR LOWER(p.style) = LOWER(?))"
+            params.extend([product, product])
+        if category:
+            query += " AND LOWER(p.category) = LOWER(?)"
+            params.append(category)
+        if store:
+            resolved = resolve_store(store, conn)
+            s_name = resolved["store_name"] if resolved else store
+            query += " AND LOWER(sa.store_name) = LOWER(?)"
+            params.append(s_name)
+        if startDate:
+            query += " AND sa.date >= ?"
+            params.append(startDate)
+        if endDate:
+            query += " AND sa.date <= ?"
+            params.append(endDate)
+
+        query += " ORDER BY sa.date DESC, sa.store_name ASC LIMIT ?;"
+        params.append(limit)
+
+        cur = conn.execute(query, params)
+        rows = [dict(r) for r in cur.fetchall()]
+
+        total_qty = sum(r["qty_sold"] for r in rows)
+        total_rev = sum(r["revenue"] for r in rows)
+
+        return {
+            "transactions": rows,
+            "totalTransactions": len(rows),
+            "totalUnitsSold": total_qty,
+            "totalRevenue": total_rev
+        }
+    finally:
+        conn.close()
+
+@app.get("/api/v1/sales/velocity")
+def get_sales_velocity(
+    sku: Optional[str] = Query(None),
+    store: Optional[str] = Query(None),
+    category: Optional[str] = Query(None)
+):
+    """Returns daily sales velocity metrics computed from historical sales."""
+    conn = get_db()
+    try:
+        query = """
+            SELECT sa.sku, sa.store_name, p.product_name, p.category, p.size, p.colour,
+                   SUM(sa.qty_sold) as total_units_sold,
+                   COUNT(DISTINCT sa.date) as active_selling_days,
+                   ROUND(CAST(SUM(sa.qty_sold) AS REAL) / 60.0, 3) as daily_sales_velocity,
+                   SUM(sa.revenue) as total_revenue
+            FROM sales sa
+            JOIN products p ON sa.sku = p.sku
+            WHERE 1=1
+        """
+        params = []
+        if sku:
+            query += " AND LOWER(sa.sku) = LOWER(?)"
+            params.append(sku)
+        if store:
+            resolved = resolve_store(store, conn)
+            s_name = resolved["store_name"] if resolved else store
+            query += " AND LOWER(sa.store_name) = LOWER(?)"
+            params.append(s_name)
+        if category:
+            query += " AND LOWER(p.category) = LOWER(?)"
+            params.append(category)
+
+        query += " GROUP BY sa.sku, sa.store_name ORDER BY total_units_sold DESC;"
+        cur = conn.execute(query, params)
+        return {"velocityMetrics": [dict(r) for r in cur.fetchall()]}
+    finally:
+        conn.close()
+
+@app.get("/api/v1/suppliers")
+def get_suppliers(sku: Optional[str] = Query(None), supplier: Optional[str] = Query(None)):
+    """Returns suppliers, purchase prices, lead times, and MOQs."""
+    conn = get_db()
+    try:
+        query = """
+            SELECT s.*, p.product_name, p.category, p.selling_price
+            FROM suppliers s
+            JOIN products p ON s.sku = p.sku
+            WHERE 1=1
+        """
+        params = []
+        if sku:
+            query += " AND LOWER(s.sku) = LOWER(?)"
+            params.append(sku)
+        if supplier:
+            query += " AND LOWER(s.supplier_name) LIKE LOWER(?)"
+            params.append(f"%{supplier}%")
+
+        query += " ORDER BY s.supplier_name ASC, p.category ASC, s.sku ASC;"
+        cur = conn.execute(query, params)
+        return {"suppliers": [dict(r) for r in cur.fetchall()]}
+    finally:
+        conn.close()
+
+@app.get("/api/v1/purchase-orders")
+def get_purchase_orders(sku: Optional[str] = Query(None), status: Optional[str] = Query(None)):
+    """Returns purchase order tracking with Open, Confirmed, Received categorization."""
+    conn = get_db()
+    try:
+        query = """
+            SELECT po.*, p.product_name, p.category, p.colour, p.size, p.selling_price
+            FROM purchase_orders po
+            JOIN products p ON po.sku = p.sku
+            WHERE 1=1
+        """
+        params = []
+        if sku:
+            query += " AND LOWER(po.sku) = LOWER(?)"
+            params.append(sku)
+        if status and status.upper() != "ALL":
+            query += " AND LOWER(po.status) = LOWER(?)"
+            params.append(status)
+
+        query += " ORDER BY po.expected_date ASC, po.po_id ASC;"
+        cur = conn.execute(query, params)
+        rows = [dict(r) for r in cur.fetchall()]
+
+        open_qty = sum(r["quantity"] for r in rows if r["status"].lower() == "open")
+        confirmed_qty = sum(r["quantity"] for r in rows if r["status"].lower() == "confirmed")
+        received_qty = sum(r["quantity"] for r in rows if r["status"].lower() == "received")
+
+        return {
+            "purchaseOrders": rows,
+            "summary": {
+                "totalOrders": len(rows),
+                "openQuantity": open_qty,
+                "confirmedQuantity": confirmed_qty,
+                "receivedQuantity": received_qty,
+                "incomingPipelineQuantity": open_qty + confirmed_qty
+            }
+        }
+    finally:
+        conn.close()
+
+@app.get("/api/v1/promotions")
+def get_promotions(store: Optional[str] = Query(None), category: Optional[str] = Query(None)):
+    """Returns active promotional campaigns and expected demand uplift fractions."""
+    conn = get_db()
+    try:
+        cur = conn.execute("SELECT * FROM promotions ORDER BY start_date ASC;")
+        promos = [dict(r) for r in cur.fetchall()]
+        return {"promotions": promos}
+    finally:
+        conn.close()
+
+@app.get("/api/v1/forecast")
+def get_forecast(
+    sku: str = Query(..., description="Target SKU"),
+    store: Optional[str] = Query(None, description="Target Store (optional)"),
+    horizonDays: int = Query(7, ge=1, le=60)
+):
+    """
+    Deterministic demand forecasting engine:
+    1. Base sales velocity from sales.csv (units/day)
+    2. Promotional demand uplift if active in horizon window
+    3. Current inventory and inventory ageing
+    4. Outstanding purchase orders (incoming stock pipeline)
+    5. Supplier replenishment recommendation (lead time, MOQ) if shortage projected
+    """
+    conn = get_db()
+    try:
+        # 1. Product details
+        cur_p = conn.execute("SELECT * FROM products WHERE LOWER(sku) = LOWER(?);", (sku,))
+        prod = cur_p.fetchone()
+        if not prod:
+            raise HTTPException(status_code=404, detail=f"SKU {sku} not found in product catalogue.")
+        prod = dict(prod)
+
+        # 2. Store resolution
+        target_store_name = None
+        target_store_id = None
+        if store:
+            resolved_st = resolve_store(store, conn)
+            if resolved_st:
+                target_store_name = resolved_st["store_name"]
+                target_store_id = resolved_st["store_id"]
+            else:
+                target_store_name = store
+
+        # 3. Base velocity & sales
+        if target_store_name:
+            cur_sales = conn.execute("""
+                SELECT SUM(qty_sold) as total_sold, COUNT(DISTINCT date) as active_days
+                FROM sales
+                WHERE LOWER(sku) = LOWER(?) AND LOWER(store_name) = LOWER(?);
+            """, (sku, target_store_name))
+        else:
+            cur_sales = conn.execute("""
+                SELECT SUM(qty_sold) as total_sold, COUNT(DISTINCT date) as active_days
+                FROM sales
+                WHERE LOWER(sku) = LOWER(?);
+            """, (sku,))
+        sales_row = cur_sales.fetchone()
+        total_sold = sales_row["total_sold"] or 0
+        base_velocity = round(total_sold / 60.0, 3) # 60 calendar days history
+
+        # 4. Promotion Uplift check
+        cur_promo = conn.execute("SELECT * FROM promotions;")
+        promos = [dict(r) for r in cur_promo.fetchall()]
+        active_promo = None
+        applied_uplift = 0.0
+
+        for pr in promos:
+            target = pr["product_or_category"].lower()
+            if target == prod["category"].lower() or target == prod["product_name"].lower():
+                if pr["store"] == "All" or (target_store_name and pr["store"].lower() == target_store_name.lower()):
+                    active_promo = pr
+                    applied_uplift = pr["expected_uplift"]
+                    break
+
+        uplifted_velocity = round(base_velocity * (1.0 + applied_uplift), 3)
+        projected_demand = round(uplifted_velocity * horizonDays, 1)
+
+        # 5. Current stock & ageing
+        if target_store_id:
+            cur_inv = conn.execute("""
+                SELECT available_quantity, ageing_days, minimum_stock_threshold
+                FROM inventory
+                WHERE LOWER(sku) = LOWER(?) AND store_id = ?;
+            """, (sku, target_store_id))
+        else:
+            cur_inv = conn.execute("""
+                SELECT SUM(available_quantity) as available_quantity, AVG(ageing_days) as ageing_days,
+                       SUM(minimum_stock_threshold) as minimum_stock_threshold
+                FROM inventory
+                WHERE LOWER(sku) = LOWER(?);
+            """, (sku,))
+        inv_row = cur_inv.fetchone()
+        current_stock = inv_row["available_quantity"] or 0
+        ageing_days = round(inv_row["ageing_days"] or 0)
+        min_threshold = inv_row["minimum_stock_threshold"] or 3
+
+        # 6. Outstanding Purchase Orders (Open and Confirmed only - Received is excluded)
+        cur_po = conn.execute("""
+            SELECT po_id, supplier_name, quantity, expected_date, status
+            FROM purchase_orders
+            WHERE LOWER(sku) = LOWER(?) AND status IN ('Open', 'Confirmed');
+        """, (sku,))
+        pending_pos = [dict(r) for r in cur_po.fetchall()]
+        incoming_po_qty = sum(p["quantity"] for p in pending_pos)
+
+        # 7. Projected ending stock
+        projected_ending_stock = round(current_stock + incoming_po_qty - projected_demand, 1)
+        is_shortage_projected = projected_ending_stock < min_threshold
+        days_until_stockout = round(current_stock / uplifted_velocity, 1) if uplifted_velocity > 0 else 999.0
+
+        # 8. Supplier & Surplus Resolution
+        cur_sup = conn.execute("SELECT * FROM suppliers WHERE LOWER(sku) = LOWER(?);", (sku,))
+        sup_info = cur_sup.fetchone()
+        supplier_rec = dict(sup_info) if sup_info else None
+
+        # Check warehouse surplus in Peenya WH
+        cur_wh = conn.execute("""
+            SELECT available_quantity FROM inventory
+            WHERE store_id = 'STORE_RET_PEENYA_WH' AND LOWER(sku) = LOWER(?);
+        """, (sku,))
+        wh_row = cur_wh.fetchone()
+        wh_available = wh_row["available_quantity"] if wh_row else 0
+        transferable_wh_surplus = max(0, wh_available - 5)
+
+        recommendation = None
+        if is_shortage_projected:
+            if transferable_wh_surplus >= 10:
+                transfer_qty = min(transferable_wh_surplus, max(10, int(projected_demand - current_stock)))
+                recommendation = {
+                    "action": "Inter-Store Transfer",
+                    "source": "Peenya WH (Central Warehouse)",
+                    "transferQuantity": transfer_qty,
+                    "reasoning": f"Peenya WH holds {wh_available} units of {sku}. Transferring {transfer_qty} units balances {target_store_name or 'store'} demand without incurring new supplier purchase costs."
+                }
+            elif pending_pos:
+                recommendation = {
+                    "action": "Wait (PO Scheduled)",
+                    "source": f"{pending_pos[0]['supplier_name']} (Incoming)",
+                    "transferQuantity": 0,
+                    "reasoning": f"Purchase Order {pending_pos[0]['po_id']} ({pending_pos[0]['quantity']} units) is {pending_pos[0]['status']} and expected on {pending_pos[0]['expected_date']}. Stock is already pipeline-protected."
+                }
+            elif supplier_rec:
+                order_qty = max(supplier_rec["moq"], int(projected_demand - current_stock))
+                recommendation = {
+                    "action": "Purchase Order",
+                    "supplier": supplier_rec["supplier_name"],
+                    "orderQuantity": order_qty,
+                    "moq": supplier_rec["moq"],
+                    "leadTimeDays": supplier_rec["lead_time_days"],
+                    "purchasePrice": supplier_rec["purchase_price"],
+                    "reasoning": f"Deficit projected. Recommend raising purchase order to {supplier_rec['supplier_name']} for {order_qty} units (MOQ: {supplier_rec['moq']} units, lead time: {supplier_rec['lead_time_days']} days)."
+                }
+
+        return {
+            "sku": sku,
+            "product": prod,
+            "store": target_store_name or "All Stores Aggregated",
+            "horizonDays": horizonDays,
+            "historicalSalesUnits": total_sold,
+            "baseDailySalesVelocity": base_velocity,
+            "activePromotion": active_promo["promotion_name"] if active_promo else None,
+            "promotionalUpliftFraction": applied_uplift,
+            "upliftedDailyDemand": uplifted_velocity,
+            "projectedHorizonDemand": projected_demand,
+            "currentPhysicalStock": current_stock,
+            "inventoryAgeingDays": ageing_days,
+            "incomingPoQuantity": incoming_po_qty,
+            "pendingPurchaseOrders": pending_pos,
+            "projectedEndingStock": projected_ending_stock,
+            "daysUntilStockout": days_until_stockout,
+            "isShortageProjected": is_shortage_projected,
+            "recommendation": recommendation
+        }
     finally:
         conn.close()
 
@@ -2303,28 +2838,67 @@ def get_deterministic_inventory_intelligence(horizon: int = Query(3, ge=1, le=30
                 donors = []
                 for other in all_rows:
                     if other["store_id"] != r["store_id"] and other["sku"] == r["sku"] and other["size"] == r["size"]:
-                        other_surplus = max(0, other["available_quantity"] - other["minimum_stock_threshold"])
+                        # If warehouse, allow surplus down to buffer of 5
+                        buffer_limit = 5 if other.get("is_warehouse") else other["minimum_stock_threshold"]
+                        other_surplus = max(0, other["available_quantity"] - buffer_limit)
                         if other_surplus > 0:
+                            is_wh = bool(other.get("is_warehouse", 0))
                             donors.append({
                                 "storeId": other["store_id"],
-                                "storeName": other["store_name"],
+                                "storeName": other["store_name"] + (" (Central Warehouse)" if is_wh else ""),
                                 "city": other["city"],
                                 "availableQuantity": other["available_quantity"],
-                                "safetyThreshold": other["minimum_stock_threshold"],
-                                "transferableSurplus": other_surplus
+                                "safetyThreshold": buffer_limit,
+                                "transferableSurplus": other_surplus,
+                                "isWarehouse": is_wh
                             })
-                donors.sort(key=lambda d: d["transferableSurplus"], reverse=True)
+                # Prioritize central warehouse first, then highest surplus
+                donors.sort(key=lambda d: (1 if d["isWarehouse"] else 0, d["transferableSurplus"]), reverse=True)
 
                 rec_store = donors[0] if donors else None
-                action_type = "Inter-Store Transfer" if rec_store else "Supplier Purchase Order"
+
+                # Check if an outstanding PO already exists for this SKU
+                cur_po = conn.execute("""
+                    SELECT po_id, supplier_name, quantity, expected_date, status
+                    FROM purchase_orders
+                    WHERE sku = ? AND status IN ('Open', 'Confirmed');
+                """, (r["sku"],))
+                po_row = cur_po.fetchone()
+
+                # Check supplier relationship for MOQ and lead time
+                cur_sup = conn.execute("""
+                    SELECT supplier_name, purchase_price, lead_time_days, moq
+                    FROM suppliers
+                    WHERE sku = ?;
+                """, (r["sku"],))
+                sup_row = cur_sup.fetchone()
+
+                if rec_store:
+                    action_type = "Inter-Store Transfer"
+                    transfer_qty = min(rec_store["transferableSurplus"], max(deficit, 10))
+                    action_title = f"Transfer {transfer_qty} units from {rec_store['storeName']}"
+                    rec_lead = "2-4 hours (City Express)" if rec_store["isWarehouse"] else "4-8 hours (Inter-Store Van)"
+                elif po_row:
+                    action_type = "Wait (Incoming Order)"
+                    transfer_qty = 0
+                    action_title = f"Scheduled PO {po_row['po_id']} ({po_row['quantity']} units arriving {po_row['expected_date']})"
+                    rec_lead = f"Arrival expected {po_row['expected_date']}"
+                elif sup_row:
+                    action_type = "Supplier Purchase Order"
+                    order_qty = max(sup_row["moq"], deficit)
+                    action_title = f"Order {order_qty} units from {sup_row['supplier_name']} (MOQ: {sup_row['moq']})"
+                    rec_lead = f"{sup_row['lead_time_days']} business days"
+                else:
+                    action_type = "Supplier Purchase Order"
+                    transfer_qty = 0
+                    action_title = f"Reorder {max(deficit, 20)} units from Supplier"
+                    rec_lead = "3-5 business days"
 
                 risk_level = "CRITICAL" if (is_low and is_stockout_soon) else ("WARNING" if is_low else "MONITOR")
                 desc = (
                     f"Stock ({qty} units) is below safety threshold ({thold} units). "
                     f"Deficit is {deficit} units. Velocity of {velocity} units/day projects depletion in ~{days_left} days."
                 )
-
-                transfer_qty = min(rec_store["transferableSurplus"], max(deficit, 10)) if rec_store else 0
 
                 critical_risks.append({
                     "storeId": r["store_id"],
@@ -2333,12 +2907,14 @@ def get_deterministic_inventory_intelligence(horizon: int = Query(3, ge=1, le=30
                     "productName": r["product_name"],
                     "sku": r["sku"],
                     "size": r["size"],
+                    "colour": r.get("colour"),
                     "quantityAvailable": qty,
                     "availableQty": qty,
                     "minimumStockThreshold": thold,
                     "minThreshold": thold,
                     "dailySalesVelocity": velocity,
                     "deficit": deficit,
+                    "ageingDays": r.get("ageing_days", 0),
                     "estimatedDaysUntilStockout": days_left,
                     "forecastDemandHorizon": demand_horizon,
                     "projectedEndingStock": projected_end,
@@ -2347,9 +2923,9 @@ def get_deterministic_inventory_intelligence(horizon: int = Query(3, ge=1, le=30
                     "eligibleDonorStores": donors,
                     "recommendedAction": {
                         "actionType": action_type,
-                        "actionTitle": f"Transfer {transfer_qty} units from {rec_store['storeName']}" if rec_store else f"Reorder {max(deficit, 20)} units from Supplier",
+                        "actionTitle": action_title,
                         "recommendedStore": rec_store,
-                        "transferLeadTime": "2-4 hours (Regional Express)" if rec_store else "3-5 business days"
+                        "transferLeadTime": rec_lead
                     }
                 })
 

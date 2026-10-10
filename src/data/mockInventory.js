@@ -1197,19 +1197,37 @@ export const MOCK_INVENTORY = [
 
 export const CATEGORIES = [
   'All Categories',
-  'T-shirts',
   'Shirts',
+  'T-Shirts',
   'Trousers',
-  'Hoodies'
+  'Ethnic',
+  'Outerwear',
+  'Formals'
 ];
 
 export const SIZES = [
   'All Sizes',
+  'M',
+  'L',
   'XL',
-  '2XL',
+  'XXL',
   '3XL',
   '4XL',
   '5XL'
+];
+
+export const COLOURS = [
+  'All Colours',
+  'Beige',
+  'Black',
+  'Charcoal',
+  'Grey',
+  'Khaki',
+  'Maroon',
+  'Navy',
+  'Olive',
+  'Sky Blue',
+  'White'
 ];
 
 export const STOCK_STATUSES = [
@@ -1218,3 +1236,4 @@ export const STOCK_STATUSES = [
   'Excess',
   'Low'
 ];
+

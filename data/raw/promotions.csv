@@ -1,0 +1,4 @@
+product_or_category,store,promotion,start_date,end_date,discount,expected_uplift
+Shirts,All,Kartika Festive Sale,2026-11-20,2026-11-27,15%,0.35
+Ethnic,All,Kartika Festive Sale,2026-11-20,2026-11-27,15%,0.35
+Outerwear,All,Early Winter Offer,2026-10-27,2026-11-10,10%,0.2

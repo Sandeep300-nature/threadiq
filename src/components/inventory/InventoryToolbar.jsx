@@ -1,12 +1,14 @@
 import React from 'react';
 import { Search, X, RotateCcw, ArrowUpDown } from 'lucide-react';
-import { CATEGORIES, SIZES } from '../../data/mockInventory';
+import { CATEGORIES, SIZES, COLOURS } from '../../data/mockInventory';
 
 export const SORT_OPTIONS = [
   { value: 'name-asc', label: 'Product Name: A–Z' },
   { value: 'qty-asc', label: 'Stock: Lowest first' },
   { value: 'qty-desc', label: 'Stock: Highest first' },
-  { value: 'size', label: 'Size (XL → 5XL)' },
+  { value: 'ageing-desc', label: 'Ageing: Oldest first' },
+  { value: 'ageing-asc', label: 'Ageing: Newest first' },
+  { value: 'size', label: 'Size (M → 5XL)' },
   { value: 'status', label: 'Stock Status' }
 ];
 
@@ -32,16 +34,24 @@ export const InventoryToolbar = ({
   sortBy,
   onSortChange,
   onReset,
-  storeOptions = []
+  storeOptions = [],
+  productOptions = [],
+  categoryOptions = CATEGORIES,
+  colourOptions = COLOURS
 }) => {
   const isFiltered =
     Boolean(searchQuery) ||
     filters.store !== 'All Stores' ||
+    (filters.product && filters.product !== 'All Products') ||
+    (filters.colour && filters.colour !== 'All Colours') ||
     filters.size !== 'All Sizes' ||
     filters.category !== 'All Categories' ||
     filters.status !== 'All Statuses' ||
     (filters.approvalStatus && filters.approvalStatus !== 'All') ||
     sortBy !== 'name-asc';
+
+  const categoriesList = categoryOptions?.length ? categoryOptions : CATEGORIES;
+  const coloursList = colourOptions?.length ? colourOptions : COLOURS;
 
   return (
     <div className="inventory-toolbar-wrapper">
@@ -52,11 +62,12 @@ export const InventoryToolbar = ({
           <Search size={14} className="inventory-search-icon" />
           <input
             type="text"
-            placeholder="Search by name, SKU (e.g. VWT-4XL)..."
+            placeholder="Search by name, SKU (e.g. S105-BEI-M)..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="inventory-search-input font-tech"
             aria-label="Search products by name or SKU identifier"
+            id="inventory-search-input"
           />
           {searchQuery && (
             <button
@@ -79,11 +90,66 @@ export const InventoryToolbar = ({
               onChange={(e) => onFilterChange('store', e.target.value)}
               className="toolbar-select font-tech"
               aria-label="Filter by store"
+              id="toolbar-store-select"
             >
-              <option value="All Stores">Store: All</option>
+              <option value="All Stores">Store: All Locations</option>
               {storeOptions.map((st) => (
                 <option key={st.id || st.name} value={st.name}>
-                  {st.name}
+                  {st.name} {st.isWarehouse || st.is_warehouse ? '(Warehouse)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Product Filter (if productOptions available) */}
+          {productOptions?.length > 0 && (
+            <div className="toolbar-select-wrap">
+              <select
+                value={filters.product || 'All Products'}
+                onChange={(e) => onFilterChange('product', e.target.value)}
+                className="toolbar-select font-tech"
+                aria-label="Filter by product"
+                id="toolbar-product-select"
+              >
+                <option value="All Products">Product: All Lines</option>
+                {productOptions.map((prod) => (
+                  <option key={prod} value={prod}>
+                    {prod}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Category Filter */}
+          <div className="toolbar-select-wrap">
+            <select
+              value={filters.category}
+              onChange={(e) => onFilterChange('category', e.target.value)}
+              className="toolbar-select font-tech"
+              aria-label="Filter by category"
+              id="toolbar-category-select"
+            >
+              {categoriesList.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat === 'All Categories' ? 'Category: All' : cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Colour Filter */}
+          <div className="toolbar-select-wrap">
+            <select
+              value={filters.colour || 'All Colours'}
+              onChange={(e) => onFilterChange('colour', e.target.value)}
+              className="toolbar-select font-tech"
+              aria-label="Filter by colour"
+              id="toolbar-colour-select"
+            >
+              {coloursList.map((col) => (
+                <option key={col} value={col}>
+                  {col === 'All Colours' ? 'Colour: All' : col}
                 </option>
               ))}
             </select>
@@ -96,26 +162,11 @@ export const InventoryToolbar = ({
               onChange={(e) => onFilterChange('size', e.target.value)}
               className="toolbar-select font-tech"
               aria-label="Filter by size"
+              id="toolbar-size-select"
             >
               {SIZES.map((sz) => (
                 <option key={sz} value={sz}>
                   {sz === 'All Sizes' ? 'Size: All' : `Size: ${sz}`}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Category Filter */}
-          <div className="toolbar-select-wrap">
-            <select
-              value={filters.category}
-              onChange={(e) => onFilterChange('category', e.target.value)}
-              className="toolbar-select font-tech"
-              aria-label="Filter by category"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat === 'All Categories' ? 'Category: All' : cat}
                 </option>
               ))}
             </select>
@@ -128,6 +179,7 @@ export const InventoryToolbar = ({
               onChange={(e) => onFilterChange('status', e.target.value)}
               className="toolbar-select font-tech"
               aria-label="Filter by stock status"
+              id="toolbar-status-select"
             >
               {STATUS_FILTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -144,6 +196,7 @@ export const InventoryToolbar = ({
               onChange={(e) => onFilterChange('approvalStatus', e.target.value)}
               className="toolbar-select font-tech"
               aria-label="Filter by approval status"
+              id="toolbar-approval-select"
             >
               {APPROVAL_FILTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -164,6 +217,7 @@ export const InventoryToolbar = ({
               onChange={(e) => onSortChange(e.target.value)}
               className="toolbar-select font-tech"
               aria-label="Sort products by"
+              id="toolbar-sort-select"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -178,41 +232,14 @@ export const InventoryToolbar = ({
             <button
               onClick={onReset}
               className="toolbar-reset-btn font-tech"
-              title="Reset all search filters and sorting"
-              aria-label="Reset all filters"
+              title="Reset all active filters"
+              aria-label="Reset all active filters"
+              id="toolbar-reset-btn"
             >
               <RotateCcw size={12} />
               <span>Reset</span>
             </button>
           )}
-        </div>
-      </div>
-
-      {/* 2. Secondary Info & Legend Bar */}
-      <div className="inventory-legend-bar">
-        <div className="inventory-legend-items font-tech">
-          <span className="legend-title text-dim">STOCK STATUS INDICATORS:</span>
-          
-          <div className="legend-item" title="Healthy stock within configured 15–75 units range">
-            <span className="legend-circle legend-circle-green font-tech">54</span>
-            <span className="legend-text">
-              <strong style={{ color: '#10b981' }}>Green:</strong> Balanced Stock (15–75)
-            </span>
-          </div>
-
-          <div className="legend-item" title="Excess inventory exceeding 75 units threshold">
-            <span className="legend-circle legend-circle-yellow font-tech">120</span>
-            <span className="legend-text">
-              <strong style={{ color: '#eab308' }}>Yellow:</strong> Excess Stock (&gt;75)
-            </span>
-          </div>
-
-          <div className="legend-item" title="Low stock warning below 15 units threshold">
-            <span className="legend-circle legend-circle-red font-tech">5</span>
-            <span className="legend-text">
-              <strong style={{ color: '#f43f5e' }}>Red:</strong> Low Stock (&lt;15)
-            </span>
-          </div>
         </div>
       </div>
     </div>

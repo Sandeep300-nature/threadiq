@@ -86,14 +86,27 @@ export const ProductCard = ({ product, index = 0, onApprove, onReject }) => {
 
       {/* 2. Product Details Body */}
       <div className="product-card-body">
-        {/* Top Meta: Size Tag and SKU */}
-        <div className="product-card-meta-row">
+        {/* Top Meta: Size Tag, Colour, SKU, and Inventory Ageing */}
+        <div className="product-card-meta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
           <span className="product-card-size-tag font-tech">
             SIZE: {product.size}
           </span>
           <span className="product-card-sku font-tech">
-            {product.skuCode}
+            {product.skuCode || product.sku}
           </span>
+          {(product.ageing_days !== undefined || product.ageingDays !== undefined || product.ageDays !== undefined) && (
+            <span
+              className="product-card-size-tag font-tech"
+              style={{
+                backgroundColor: (product.ageing_days ?? product.ageingDays ?? product.ageDays) > 90 ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                color: (product.ageing_days ?? product.ageingDays ?? product.ageDays) > 90 ? '#eab308' : '#d4d4d8',
+                borderColor: (product.ageing_days ?? product.ageingDays ?? product.ageDays) > 90 ? 'rgba(234, 179, 8, 0.3)' : 'transparent'
+              }}
+              title="Inventory ageing duration in days"
+            >
+              AGE: {product.ageing_days ?? product.ageingDays ?? product.ageDays}d
+            </span>
+          )}
         </div>
 
         {/* Product Name */}
@@ -101,12 +114,29 @@ export const ProductCard = ({ product, index = 0, onApprove, onReject }) => {
           {product.name}
         </h3>
 
-        {/* Store Location */}
-        <div className="product-card-store-row">
-          <MapPin size={13} className="product-card-store-icon" />
-          <span className="product-card-store-name">
-            {product.storeName}
-          </span>
+        {/* Store Location and Colour Swatch */}
+        <div className="product-card-store-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <MapPin size={13} className="product-card-store-icon" />
+            <span className="product-card-store-name">
+              {product.storeName}
+            </span>
+          </div>
+          {product.colour && (
+            <span className="font-tech text-dim" style={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span
+                style={{
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  backgroundColor: product.colourHex || product.hexColour || '#71717a',
+                  display: 'inline-block',
+                  border: '1px solid rgba(255,255,255,0.25)'
+                }}
+              />
+              {product.colour}
+            </span>
+          )}
         </div>
 
         {/* Stock Status Label & Price Footer */}
@@ -122,7 +152,7 @@ export const ProductCard = ({ product, index = 0, onApprove, onReject }) => {
           </div>
 
           <div className="product-card-price font-tech">
-            ${Number(product.price || 0).toFixed(2)}
+            ₹{Number(product.price || product.unitPrice || 0).toLocaleString()}
           </div>
         </div>
 

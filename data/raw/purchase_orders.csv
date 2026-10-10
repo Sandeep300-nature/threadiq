@@ -1,0 +1,36 @@
+po,supplier,sku,qty,expected_date,status
+PO-3101,Arvind Apparel Sourcing,S213-MAR-XL,30,2026-11-23,Open
+PO-3102,Surat Textile House,S203-NAV-4XL,50,2026-11-23,Confirmed
+PO-3103,Ludhiana Woollens,S221-SKY-XL,20,2026-11-27,Confirmed
+PO-3104,Surat Textile House,S186-GRE-XXL,20,2026-11-21,Confirmed
+PO-3105,Ludhiana Woollens,S173-WHI-3XL,30,2026-11-25,Open
+PO-3106,Ludhiana Woollens,S138-BLA-3XL,50,2026-11-20,Open
+PO-3107,Ludhiana Woollens,S173-BEI-XL,50,2026-11-26,Confirmed
+PO-3108,Ludhiana Woollens,S105-SKY-L,20,2026-11-28,Confirmed
+PO-3109,Tiruppur Knit Mills,S194-SKY-3XL,30,2026-11-29,Open
+PO-3110,Tiruppur Knit Mills,S164-GRE-XL,50,2026-11-30,Open
+PO-3111,Tiruppur Knit Mills,S149-WHI-5XL,30,2026-11-09,Received
+PO-3112,Bengaluru Garments Ltd,S117-GRE-5XL,30,2026-11-26,Confirmed
+PO-3113,Arvind Apparel Sourcing,S178-MAR-L,20,2026-11-30,Open
+PO-3114,Ludhiana Woollens,S122-BLA-XL,30,2026-11-23,Open
+PO-3115,Surat Textile House,S228-SKY-4XL,50,2026-11-27,Open
+PO-3116,Surat Textile House,S228-BEI-L,20,2026-11-30,Confirmed
+PO-3117,Arvind Apparel Sourcing,S178-MAR-M,30,2026-11-18,Confirmed
+PO-3118,Tiruppur Knit Mills,S164-GRE-XXL,30,2026-11-08,Received
+PO-3119,Ludhiana Woollens,S105-SKY-5XL,20,2026-11-24,Confirmed
+PO-3120,Tiruppur Knit Mills,S134-BEI-XXL,50,2026-11-29,Open
+PO-3121,Ludhiana Woollens,S105-SKY-4XL,30,2026-11-03,Received
+PO-3122,Arvind Apparel Sourcing,S178-MAR-XXL,50,2026-11-07,Received
+PO-3123,Bengaluru Garments Ltd,S232-GRE-4XL,20,2026-11-30,Confirmed
+PO-3124,Bengaluru Garments Ltd,S199-NAV-M,50,2026-11-19,Open
+PO-3125,Tiruppur Knit Mills,S127-WHI-5XL,30,2026-11-02,Received
+PO-3126,Tiruppur Knit Mills,S134-BEI-3XL,20,2026-11-06,Received
+PO-3127,Surat Textile House,S247-OLI-3XL,50,2026-11-27,Confirmed
+PO-3128,Tiruppur Knit Mills,S194-BEI-4XL,30,2026-11-04,Received
+PO-3129,Ludhiana Woollens,S239-SKY-L,50,2026-11-24,Confirmed
+PO-3130,Arvind Apparel Sourcing,S213-MAR-XXL,50,2026-11-18,Open
+PO-3131,Bengaluru Garments Ltd,S109-BLA-5XL,30,2026-11-24,Confirmed
+PO-3132,Surat Textile House,S186-MAR-XL,50,2026-11-10,Received
+PO-3133,Bengaluru Garments Ltd,S232-OLI-3XL,50,2026-11-21,Confirmed
+PO-3134,Ludhiana Woollens,S122-NAV-5XL,30,2026-11-26,Open
+PO-3135,Ludhiana Woollens,S105-SKY-XL,30,2026-10-28,Received

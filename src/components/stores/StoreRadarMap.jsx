@@ -138,9 +138,15 @@ export const StoreRadarMap = ({
       const isTransferSource = selectedTransfer?.sourceStoreId === store.id;
       const isTransferDest = selectedTransfer?.destStoreId === store.id;
 
-      // Extract short 3-letter city code for center of radar marker (e.g., BLR, MYS, MNG, HUB, BEL, KLB, SMG, DVG)
+      // Extract short 3-letter city code for center of radar marker (e.g., JAY, RAJ, WFD, MAR, YEL, WH)
       let codeLabel = store.city ? store.city.substring(0, 3).toUpperCase() : 'STR';
-      if (store.city === 'Bengaluru') codeLabel = 'BLR';
+      if (store.name === 'Jayanagar') codeLabel = 'JAY';
+      else if (store.name === 'Rajajinagar') codeLabel = 'RAJ';
+      else if (store.name === 'Whitefield') codeLabel = 'WFD';
+      else if (store.name === 'Marathahalli') codeLabel = 'MAR';
+      else if (store.name === 'Yelahanka') codeLabel = 'YEL';
+      else if (store.name === 'Peenya WH' || store.isWarehouse || store.storeType === 'Warehouse') codeLabel = 'WH';
+      else if (store.city === 'Bengaluru') codeLabel = 'BLR';
       else if (store.city === 'Mysuru') codeLabel = 'MYS';
       else if (store.city === 'Mangaluru') codeLabel = 'MNG';
       else if (store.city?.includes('Hubballi')) codeLabel = 'HUB';
@@ -149,16 +155,19 @@ export const StoreRadarMap = ({
       else if (store.city === 'Shivamogga') codeLabel = 'SMG';
       else if (store.city === 'Davanagere') codeLabel = 'DVG';
 
+      const isWh = store.isWarehouse || store.storeType === 'Warehouse';
+
       // Custom divIcon with circular color ring, center point, and pulse animation
       const markerHtml = `
-        <div class="radar-marker-wrap ${isStoreSelected ? 'selected' : ''} ${statusObj.isPulsing ? 'pulsing' : ''} ${isUnconfigured ? 'unconfigured-node' : ''} ${isTransferSource ? 'transfer-source-node' : ''} ${isTransferDest ? 'transfer-dest-node' : ''}" style="--marker-color: ${statusObj.color}" data-store-id="${store.id}" data-store-name="${store.name}">
+        <div class="radar-marker-wrap ${isStoreSelected ? 'selected' : ''} ${statusObj.isPulsing ? 'pulsing' : ''} ${isUnconfigured ? 'unconfigured-node' : ''} ${isTransferSource ? 'transfer-source-node' : ''} ${isTransferDest ? 'transfer-dest-node' : ''} ${isWh ? 'warehouse-node' : ''}" style="--marker-color: ${statusObj.color}" data-store-id="${store.id}" data-store-name="${store.name}">
           ${!isUnconfigured ? '<div class="radar-pulse-ring"></div>' : ''}
           <div class="radar-marker-outer" style="border-color: ${statusObj.color}; border-style: ${isUnconfigured ? 'dashed' : 'solid'}; background-color: rgba(10, 11, 15, 0.9);" data-store-id="${store.id}">
             <span class="radar-marker-code font-tech" style="color: ${statusObj.color}; ${isUnconfigured ? 'opacity: 0.6;' : ''}">
               ${codeLabel}
             </span>
           </div>
-          ${isUnconfigured ? '<div class="unconfigured-marker-pill font-tech">NO CATALOGUE</div>' : ''}
+          ${isWh ? '<div class="unconfigured-marker-pill font-tech" style="background: rgba(37,99,235,0.85); color:#ffffff; border-color:#60a5fa;">CENTRAL WH</div>' : ''}
+          ${isUnconfigured && !isWh ? '<div class="unconfigured-marker-pill font-tech">NO CATALOGUE</div>' : ''}
           ${isTransferSource ? '<div class="transfer-role-pill source">EXCESS SOURCE</div>' : ''}
           ${isTransferDest ? '<div class="transfer-role-pill dest">SHORTAGE TARGET</div>' : ''}
           ${isStoreSelected && !isTransferSource && !isTransferDest ? '<div class="radar-selected-indicator"></div>' : ''}
@@ -184,7 +193,7 @@ export const StoreRadarMap = ({
       const tooltipContent = isUnconfigured
         ? `
           <div class="radar-tooltip-content font-tech">
-            <div class="radar-tooltip-title">${store.name} (${store.city})</div>
+            <div class="radar-tooltip-title">${store.name} (${store.city || store.location || ''}) ${isWh ? '📦 [CENTRAL WAREHOUSE]' : ''}</div>
             <div class="radar-tooltip-status" style="color: #a1a1aa;">
               ⊗ Inventory Not Configured
             </div>
@@ -198,7 +207,7 @@ export const StoreRadarMap = ({
         `
         : `
           <div class="radar-tooltip-content font-tech">
-            <div class="radar-tooltip-title">${store.name} (${store.city})</div>
+            <div class="radar-tooltip-title">${store.name} (${store.city || store.location || ''}) ${isWh ? '📦 [CENTRAL WAREHOUSE]' : ''}</div>
             <div class="radar-tooltip-status" style="color: ${statusObj.color};">
               ● ${statusObj.label || statusObj.status}
             </div>
@@ -209,6 +218,7 @@ export const StoreRadarMap = ({
               ${statusObj.outOfStockSizes?.length ? ` • Out: ${statusObj.outOfStockSizes.join(', ')}` : ''}
               ${statusObj.excessStockSizes?.length ? ` • Excess: ${statusObj.excessStockSizes.join(', ')}` : ''}
             </div>
+            ${store.customerProfile ? `<div style="color: #93c5fd; font-size: 0.68rem; margin-top: 2px;">Profile: ${store.customerProfile}</div>` : ''}
             ${isTransferSource ? '<div style="color: #eab308; font-weight: 700; margin-top: 2px;">⚡ Active Transfer Origin</div>' : ''}
             ${isTransferDest ? '<div style="color: #f43f5e; font-weight: 700; margin-top: 2px;">⚡ Active Transfer Target</div>' : ''}
           </div>

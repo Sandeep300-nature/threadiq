@@ -131,6 +131,16 @@ export const StoreDetailsPanel = ({
               <div>
                 <div className="store-panel-badge-row">
                   <span className="technical-index">{store.code || 'STORE-NODE'}</span>
+                  {store.isWarehouse || store.storeType === 'Warehouse' ? (
+                    <span className="technical-index" style={{ background: '#2563eb', color: '#ffffff', borderColor: '#60a5fa' }}>
+                      CENTRAL WAREHOUSE
+                    </span>
+                  ) : null}
+                  {store.storeType && store.storeType !== 'Warehouse' && (
+                    <span className="technical-index" style={{ background: 'rgba(255,255,255,0.08)', color: '#e4e4e7' }}>
+                      {store.storeType.toUpperCase()}
+                    </span>
+                  )}
                   <span
                     className="store-panel-status-pill font-tech"
                     style={{
@@ -148,8 +158,15 @@ export const StoreDetailsPanel = ({
 
                 <div className="store-panel-address font-tech">
                   <MapPin size={12} className="text-dim" />
-                  <span>{store.address || `${store.city}, ${store.state}`}</span>
+                  <span>{store.address || `${store.city || store.location || ''}, ${store.state || 'KA'}`}</span>
                 </div>
+
+                {store.customerProfile && (
+                  <div className="store-panel-profile font-tech" style={{ marginTop: '6px', fontSize: '0.72rem', color: '#93c5fd', background: 'rgba(59, 130, 246, 0.08)', padding: '4px 8px', borderRadius: '4px', borderLeft: '2px solid #3b82f6' }}>
+                    <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>CUSTOMER PROFILE: </span>
+                    <span>{store.customerProfile}</span>
+                  </div>
+                )}
               </div>
             </div>
 

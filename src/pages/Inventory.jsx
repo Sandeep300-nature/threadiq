@@ -35,6 +35,8 @@ export const Inventory = () => {
   // Filter state
   const [filters, setFilters] = useState({
     store: initialStore,
+    product: 'All Products',
+    colour: 'All Colours',
     size: 'All Sizes',
     category: 'All Categories',
     status: 'All Statuses',
@@ -64,6 +66,21 @@ export const Inventory = () => {
     }
   };
 
+  // Derive distinct options for filter dropdowns from items
+  const productOptions = useMemo(() => {
+    return [...new Set(items.map(it => it.productName || it.name).filter(Boolean))].sort();
+  }, [items]);
+
+  const categoryOptions = useMemo(() => {
+    const cats = [...new Set(items.map(it => it.category).filter(Boolean))].sort();
+    return ['All Categories', ...cats];
+  }, [items]);
+
+  const colourOptions = useMemo(() => {
+    const cols = [...new Set(items.map(it => it.colour).filter(Boolean))].sort();
+    return ['All Colours', ...cols];
+  }, [items]);
+
   // Fetch data when filters or search change
   useEffect(() => {
     loadData();
@@ -85,6 +102,8 @@ export const Inventory = () => {
   const handleResetFilters = () => {
     setFilters({
       store: 'All Stores',
+      product: 'All Products',
+      colour: 'All Colours',
       size: 'All Sizes',
       category: 'All Categories',
       status: 'All Statuses',
@@ -178,6 +197,10 @@ export const Inventory = () => {
         return list.sort((a, b) => (a.availableQty || 0) - (b.availableQty || 0));
       case 'qty-desc':
         return list.sort((a, b) => (b.availableQty || 0) - (a.availableQty || 0));
+      case 'ageing-desc':
+        return list.sort((a, b) => (b.ageing_days ?? b.ageingDays ?? b.ageDays ?? 0) - (a.ageing_days ?? a.ageingDays ?? a.ageDays ?? 0));
+      case 'ageing-asc':
+        return list.sort((a, b) => (a.ageing_days ?? a.ageingDays ?? a.ageDays ?? 0) - (b.ageing_days ?? b.ageingDays ?? b.ageDays ?? 0));
       case 'size':
         return list.sort((a, b) => (SIZE_WEIGHTS[a.size] || 99) - (SIZE_WEIGHTS[b.size] || 99));
       case 'status': {
@@ -254,6 +277,9 @@ export const Inventory = () => {
         onSortChange={setSortBy}
         onReset={handleResetFilters}
         storeOptions={stores}
+        productOptions={productOptions}
+        categoryOptions={categoryOptions}
+        colourOptions={colourOptions}
       />
 
       {/* 3. Main Product Grid & Content Area */}

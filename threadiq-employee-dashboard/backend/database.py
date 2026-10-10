@@ -209,6 +209,21 @@ def init_db():
             conn.execute("ALTER TABLE stores ADD COLUMN lat REAL DEFAULT 12.9716;")
         if "lng" not in existing_st_cols:
             conn.execute("ALTER TABLE stores ADD COLUMN lng REAL DEFAULT 77.5946;")
+        if "store_type" not in existing_st_cols:
+            conn.execute("ALTER TABLE stores ADD COLUMN store_type TEXT DEFAULT 'High street';")
+        if "customer_profile" not in existing_st_cols:
+            conn.execute("ALTER TABLE stores ADD COLUMN customer_profile TEXT;")
+        if "is_warehouse" not in existing_st_cols:
+            conn.execute("ALTER TABLE stores ADD COLUMN is_warehouse INTEGER DEFAULT 0;")
+        if "is_imported" not in existing_st_cols:
+            conn.execute("ALTER TABLE stores ADD COLUMN is_imported INTEGER DEFAULT 0;")
+
+        # Apply schema migrations for imported retail tables (products, sales, suppliers, purchase_orders, promotions)
+        try:
+            from backend.import_retail_datasets import apply_schema_migrations
+            apply_schema_migrations(conn)
+        except Exception as e:
+            pass
 
         # Seed all Karnataka Retail Stores
         stores_data = [
