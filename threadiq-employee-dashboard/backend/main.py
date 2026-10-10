@@ -2410,9 +2410,10 @@ def call_groq_cloud(payload: dict) -> dict:
         vel_text = f"{vel} units/day" if vel is not None else "N/A"
         days = item.get("estimatedDaysUntilStockout")
         days_text = f"{days} days" if days is not None else "N/A"
-        dec = item.get("recommendedAction", {})
+        dec = item.get("recommendedAction") or {}
         action_type = dec.get("actionType", "Under Evaluation")
-        source_store = dec.get("recommendedStore", {}).get("storeName", "N/A")
+        rec_store = dec.get("recommendedStore") or {}
+        source_store = rec_store.get("storeName", "N/A")
         lead_time = dec.get("transferLeadTime") or dec.get("reorderLeadTime") or "N/A"
         desc = item.get("riskDescription", "")
         risk_lines.append(
@@ -2531,6 +2532,8 @@ EMPLOYEE_INDEX_PATH = os.path.join(BASE_DIR, "index.html")
 # Mount employee assets
 app.mount("/css", StaticFiles(directory=os.path.join(BASE_DIR, "css")), name="employee-css")
 app.mount("/js", StaticFiles(directory=os.path.join(BASE_DIR, "js")), name="employee-js")
+app.mount("/employee/css", StaticFiles(directory=os.path.join(BASE_DIR, "css")), name="employee-nested-css")
+app.mount("/employee/js", StaticFiles(directory=os.path.join(BASE_DIR, "js")), name="employee-nested-js")
 
 # Mount manager built assets if available
 if os.path.exists(MANAGER_ASSETS_DIR):
