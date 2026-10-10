@@ -123,17 +123,16 @@ function renderGroupedProductMatrix(container, items, headerHtml = '') {
     const key = item.name || 'T-Shirt';
     if (!groups[key]) {
       // Derive clean base SKU
-      let baseSku = item.sku;
-      if (item.sku.includes('-')) {
-        const parts = item.sku.split('-');
-        // Remove size suffix if present
+      let baseSku = item.sku || 'TIQ-SHIRT';
+      if (typeof baseSku === 'string' && baseSku.includes('-')) {
+        const parts = baseSku.split('-');
         baseSku = parts.slice(0, parts.length - 1).join('-');
       }
       groups[key] = {
         name: key,
         category: item.category || 'Casual Wear',
         imageUrl: item.imageUrl || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
-        baseSku: baseSku || item.sku,
+        baseSku: baseSku || item.sku || 'TIQ-SHIRT',
         minThreshold: item.minThreshold || 15,
         items: []
       };
@@ -183,12 +182,12 @@ function renderGroupedProductMatrix(container, items, headerHtml = '') {
       else if (cLower.includes('navy')) colorClass = 'navy';
       else if (cLower.includes('grey')) colorClass = 'grey';
 
-      const rowUpdateDate = new Date(item.lastUpdated).toLocaleDateString('en-IN', {
+      const rowUpdateDate = item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString('en-IN', {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      });
+      }) : 'Recent';
 
       return `
         <tr data-product-id="${item.id}" data-sku="${item.sku}">
@@ -346,13 +345,12 @@ function renderFlatTableView(container, items, headerHtml = '') {
     else if (cLower.includes('navy')) colorClass = 'navy';
     else if (cLower.includes('grey')) colorClass = 'grey';
 
-    const updatedDate = new Date(item.lastUpdated);
-    const dateFormatted = updatedDate.toLocaleDateString('en-IN', {
+    const dateFormatted = item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString('en-IN', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    });
+    }) : 'Recent';
 
     return `
       <tr data-product-id="${item.id}">

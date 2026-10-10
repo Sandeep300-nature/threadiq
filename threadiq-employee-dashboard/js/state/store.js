@@ -8,10 +8,11 @@ import { toast } from '../components/toast.js';
 
 class AppStore {
   constructor() {
+    const currentUser = inventoryService.getCurrentUser();
     this.state = {
       isAuthenticated: inventoryService.isAuthenticated(),
-      currentUser: inventoryService.getCurrentUser(),
-      selectedStoreId: inventoryService.getCurrentUser()?.assigned_store_id || 'STORE_KA_BLR_01',
+      currentUser: currentUser,
+      selectedStoreId: currentUser?.assigned_store_id || 'STORE_KA_MYS_01',
       connectionStatus: inventoryService.connectionState.status, // 'connected' | 'reconnecting' | 'offline'
       activeView: 'dashboard',
       inventory: [],
@@ -77,7 +78,7 @@ class AppStore {
   // Handle service events (including real-time SSE broadcasts)
   async handleServiceEvent(event, data) {
     if (event === 'AUTH_STATE_CHANGED') {
-      const assignedStore = data.user?.assigned_store_id || 'STORE_KA_BLR_01';
+      const assignedStore = data.user?.assigned_store_id || 'STORE_KA_MYS_01';
       this.setState({
         isAuthenticated: data.isAuthenticated,
         currentUser: data.user,
@@ -127,20 +128,27 @@ class AppStore {
     if (!this.state.isAuthenticated) return;
 
     try {
-      const targetStoreId = this.state.selectedStoreId || this.state.currentUser?.assigned_store_id || 'STORE_KA_BLR_01';
+      const targetStoreId = this.state.selectedStoreId || this.state.currentUser?.assigned_store_id || 'STORE_KA_MYS_01';
       const filtersWithStore = { ...this.state.inventoryFilters, storeId: targetStoreId };
 
-      const [invRes, summaryRes, alertsRes, transfersRes, histRes] = await Promise.all([
+      const results = await Promise.allSettled([
         inventoryService.getInventory(filtersWithStore),
         inventoryService.getSummary(targetStoreId),
-        inventoryService.getAlerts(),
+        inventoryService.getAlerts(targetStoreId),
         inventoryService.getTransfers(targetStoreId),
-        inventoryService.getHistory(this.state.historyFilters)
+        inventoryService.getHistory(this.state.historyFilters, targetStoreId)
       ]);
+
+      const invRes = results[0].status === 'fulfilled' ? results[0].value : { items: [] };
+      const summaryRes = results[1].status === 'fulfilled' ? results[1].value : this.state.summary;
+      const alertsRes = results[2].status === 'fulfilled' ? results[2].value : { alerts: [] };
+      const transfersRes = results[3].status === 'fulfilled' ? results[3].value : { transfers: [] };
+      const histRes = results[4].status === 'fulfilled' ? results[4].value : { history: [] };
 
       const unreadAlerts = (alertsRes.alerts || []).filter(a => a.severity === 'critical' || a.severity === 'warning').length;
 
       this.setState({
+        selectedStoreId: targetStoreId,
         inventory: invRes.items || [],
         summary: summaryRes || this.state.summary,
         alerts: alertsRes.alerts || [],

@@ -192,6 +192,7 @@ def get_me(current_employee: dict = Depends(get_current_employee)):
 # ---------------------------------------------------------------------------
 @app.get("/api/stores/me/inventory")
 def get_store_inventory(
+    store_id: Optional[str] = Query(None, alias="storeId"),
     colour: Optional[str] = Query(None),
     size: Optional[str] = Query(None),
     status_filter: Optional[str] = Query(None, alias="status"),
@@ -199,9 +200,9 @@ def get_store_inventory(
     current_employee: dict = Depends(get_current_employee)
 ):
     """
-    Fetches full inventory strictly for the employee's assigned store.
+    Fetches full inventory strictly for the employee's assigned store (or selected demo store).
     """
-    store_id = current_employee["store_id"]
+    target_store_id = store_id or current_employee["store_id"]
     conn = get_db()
 
     query = """
@@ -212,7 +213,7 @@ def get_store_inventory(
         FROM inventory
         WHERE store_id = ?
     """
-    params = [store_id]
+    params = [target_store_id]
 
     if colour and colour != 'all':
         query += " AND LOWER(colour_id) = LOWER(?)"
@@ -230,7 +231,11 @@ def get_store_inventory(
     query += " ORDER BY product_name ASC, size ASC;"
     cur = conn.execute(query, params)
     rows = [dict(r) for r in cur.fetchall()]
+    store_name_cur = conn.execute("SELECT store_name FROM stores WHERE store_id = ?;", (target_store_id,))
+    store_name_row = store_name_cur.fetchone()
     conn.close()
+
+    resolved_store_name = store_name_row["store_name"] if store_name_row else current_employee.get("store_name", "")
 
     # Filter by stock status if requested
     items = []
@@ -269,24 +274,33 @@ def get_store_inventory(
             items.append(item_obj)
 
     return {
-        "storeId": store_id,
-        "storeName": current_employee["store_name"],
+        "storeId": target_store_id,
+        "storeName": resolved_store_name,
         "items": items,
         "totalCount": len(items)
     }
 
 @app.get("/api/stores/me/inventory/summary")
-def get_inventory_summary(current_employee: dict = Depends(get_current_employee)):
+def get_inventory_summary(
+    store_id: Optional[str] = Query(None, alias="storeId"),
+    current_employee: dict = Depends(get_current_employee)
+):
     """
-    Returns KPI metrics for the 4 dashboard summary cards for assigned store.
+    Returns KPI metrics for the 4 dashboard summary cards for assigned store or selected store.
     """
-    store_id = current_employee["store_id"]
+    target_store_id = store_id or current_employee["store_id"]
     conn = get_db()
     cur = conn.execute("""
         SELECT available_quantity, minimum_stock_threshold FROM inventory WHERE store_id = ?;
-    """, (store_id,))
+    """, (target_store_id,))
     rows = cur.fetchall()
+
+    st_cur = conn.execute("SELECT store_name, store_code FROM stores WHERE store_id = ?;", (target_store_id,))
+    st_row = st_cur.fetchone()
     conn.close()
+
+    store_name = st_row["store_name"] if st_row else current_employee["store_name"]
+    store_code = st_row["store_code"] if st_row else current_employee["store_code"]
 
     total_stock_units = sum(r["available_quantity"] for r in rows)
     available_products = sum(1 for r in rows if r["available_quantity"] > 0)
@@ -294,9 +308,9 @@ def get_inventory_summary(current_employee: dict = Depends(get_current_employee)
     out_of_stock_variants = sum(1 for r in rows if r["available_quantity"] == 0)
 
     return {
-        "storeId": store_id,
-        "storeName": current_employee["store_name"],
-        "storeCode": current_employee["store_code"],
+        "storeId": target_store_id,
+        "storeName": store_name,
+        "storeCode": store_code,
         "totalStockUnits": total_stock_units,
         "availableProducts": available_products,
         "lowStockVariants": low_stock_variants,
@@ -453,15 +467,16 @@ async def submit_inventory_adjustment(
 
 @app.get("/api/stores/me/inventory/history")
 def get_inventory_history(
+    store_id: Optional[str] = Query(None, alias="storeId"),
     update_type: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     limit: int = 50,
     current_employee: dict = Depends(get_current_employee)
 ):
     """
-    Returns auditable inventory history log for employee's assigned store.
+    Returns auditable inventory history log for employee's assigned store or selected store.
     """
-    store_id = current_employee["store_id"]
+    target_store_id = store_id or current_employee["store_id"]
     conn = get_db()
 
     query = """
@@ -471,7 +486,7 @@ def get_inventory_history(
         FROM inventory_history
         WHERE store_id = ?
     """
-    params = [store_id]
+    params = [target_store_id]
 
     if update_type and update_type != "all":
         query += " AND LOWER(update_type) LIKE LOWER(?)"
@@ -512,18 +527,24 @@ def get_inventory_history(
     return {"history": history, "total": len(history)}
 
 @app.get("/api/stores/me/inventory/alerts")
-def get_inventory_alerts(current_employee: dict = Depends(get_current_employee)):
+def get_inventory_alerts(
+    store_id: Optional[str] = Query(None, alias="storeId"),
+    current_employee: dict = Depends(get_current_employee)
+):
     """
     Computes real-time AI alerts dynamically from live database stock.
     """
-    store_id = current_employee["store_id"]
-    store_name = current_employee["store_name"]
+    target_store_id = store_id or current_employee["store_id"]
     conn = get_db()
+    st_cur = conn.execute("SELECT store_name FROM stores WHERE store_id = ?;", (target_store_id,))
+    st_row = st_cur.fetchone()
+    store_name = st_row["store_name"] if st_row else current_employee["store_name"]
+
     cur = conn.execute("""
         SELECT inventory_id, product_name, colour, size, sku, available_quantity, minimum_stock_threshold
         FROM inventory
         WHERE store_id = ?;
-    """, (store_id,))
+    """, (target_store_id,))
     rows = cur.fetchall()
     conn.close()
 

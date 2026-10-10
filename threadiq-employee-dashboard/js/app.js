@@ -63,16 +63,14 @@ function updateEmployeeContext(user) {
   if (!user) return;
 
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const assignedStoreName = user.store_name || (user.assigned_store_id === 'STORE_KA_MYS_01' ? 'Mysuru Central' : 'Brigade Road Flagship');
 
-  // Topbar
+  // Topbar profile
   const topbarUser = document.getElementById('topbar-user-name');
   const topbarAvatar = document.getElementById('topbar-user-avatar');
-  const topbarStore = document.getElementById('topbar-store-name');
-  const breadcrumbStore = document.getElementById('breadcrumb-current-view');
 
   if (topbarUser) topbarUser.textContent = user.name;
   if (topbarAvatar) topbarAvatar.textContent = initials;
-  if (topbarStore) topbarStore.textContent = user.store_name || 'Assigned Store';
 
   // Sidebar
   const sidebarUser = document.getElementById('sidebar-user-name');
@@ -82,8 +80,8 @@ function updateEmployeeContext(user) {
 
   if (sidebarUser) sidebarUser.textContent = user.name;
   if (sidebarAvatar) sidebarAvatar.textContent = initials;
-  if (sidebarStoreTitle) sidebarStoreTitle.textContent = user.store_name || 'Assigned Store';
-  if (sidebarStoreRegion) sidebarStoreRegion.textContent = `Store #${user.store_code || 'KA'}`;
+  if (sidebarStoreTitle) sidebarStoreTitle.textContent = assignedStoreName;
+  if (sidebarStoreRegion) sidebarStoreRegion.textContent = `Assigned · ${user.store_code || 'KA'}`;
 }
 
 /**
@@ -255,6 +253,14 @@ function setupAuthControls() {
  * Handles sidebar navigation and hash routing
  */
 function setupNavigation() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+
+  function closeMobileDrawer() {
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+
   const navButtons = document.querySelectorAll('.sidebar-nav .nav-item[data-nav]');
   const breadcrumbCurrent = document.getElementById('breadcrumb-current-view');
   const pageHeading = document.getElementById('page-title-heading');
@@ -345,22 +351,14 @@ function setupNavigation() {
 
   // Mobile drawer controls
   const mobileToggle = document.getElementById('mobile-menu-toggle');
-  const sidebar = document.getElementById('app-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
-
   if (mobileToggle) {
     mobileToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('mobile-open');
-      backdrop.classList.toggle('active');
+      if (sidebar) sidebar.classList.toggle('mobile-open');
+      if (backdrop) backdrop.classList.toggle('active');
     });
   }
 
   if (backdrop) backdrop.addEventListener('click', closeMobileDrawer);
-
-  function closeMobileDrawer() {
-    if (sidebar) sidebar.classList.remove('mobile-open');
-    if (backdrop) backdrop.classList.remove('active');
-  }
 }
 
 /**
@@ -557,9 +555,21 @@ function setupDemoStoreSelector() {
 
   storeSelect.addEventListener('change', async (e) => {
     const newStoreId = e.target.value;
-    const storeName = storeSelect.options[storeSelect.selectedIndex].text;
+    const storeRawName = storeSelect.options[storeSelect.selectedIndex].text;
+    const cleanStoreName = storeRawName.split('(')[0].trim();
+
+    // Immediately update titles across all view headers
+    const invStoreTitle = document.getElementById('inventory-view-store-title');
+    if (invStoreTitle) invStoreTitle.textContent = cleanStoreName;
+
+    const topbarStore = document.getElementById('topbar-store-name');
+    if (topbarStore) topbarStore.textContent = cleanStoreName;
+
+    const breadcrumbStore = document.getElementById('breadcrumb-store-name');
+    if (breadcrumbStore) breadcrumbStore.textContent = cleanStoreName;
+
     await store.setSelectedStore(newStoreId);
-    toast.info('Store Context Switched', `Displaying T-shirt inventory exclusively for ${storeName}.`);
+    toast.info('Store Context Switched', `Displaying T-shirt inventory exclusively for ${cleanStoreName}.`);
   });
 }
 
@@ -621,59 +631,70 @@ function updateUI(state) {
     }
   }
 
+  const storeMap = {
+    'STORE_KA_MYS_01': 'Mysuru Central',
+    'STORE_KA_BLR_01': 'Brigade Road Flagship',
+    'STORE_KA_MNG_01': 'Coastal City Pavilion (Mangaluru)',
+    'STORE_KA_HUB_01': 'North Karnataka Hub (Hubballi)',
+    'STORE_RET_JAYANAGAR': 'Jayanagar',
+    'STORE_RET_RAJAJINAGAR': 'Rajajinagar',
+    'STORE_RET_WHITEFIELD': 'Whitefield',
+    'STORE_RET_MARATHAHALLI': 'Marathahalli',
+    'STORE_RET_YELAHANKA': 'Yelahanka',
+    'STORE_RET_PEENYA_WH': 'Peenya WH'
+  };
+  const activeStoreName = storeMap[selectedStoreId] || summary?.storeName || currentUser?.store_name || 'Assigned Store';
+
   // Update Inventory View Store Title Header
   const invStoreTitle = document.getElementById('inventory-view-store-title');
   if (invStoreTitle) {
-    const storeMap = {
-      'STORE_KA_BLR_01': 'Brigade Road Flagship',
-      'STORE_KA_MYS_01': 'Mysuru Central',
-      'STORE_KA_MNG_01': 'Coastal City Pavilion (Mangaluru)',
-      'STORE_KA_HUB_01': 'North Karnataka Hub (Hubballi)',
-      'STORE_RET_JAYANAGAR': 'Jayanagar',
-      'STORE_RET_RAJAJINAGAR': 'Rajajinagar',
-      'STORE_RET_WHITEFIELD': 'Whitefield',
-      'STORE_RET_MARATHAHALLI': 'Marathahalli',
-      'STORE_RET_YELAHANKA': 'Yelahanka',
-      'STORE_RET_PEENYA_WH': 'Peenya WH'
-    };
-    invStoreTitle.textContent = storeMap[selectedStoreId] || summary?.storeName || 'Assigned Store';
+    invStoreTitle.textContent = activeStoreName;
   }
 
-  // Update topbar store name if demo store selected
+  // Update topbar store name
   const topbarStore = document.getElementById('topbar-store-name');
-  if (topbarStore && selectedStoreId) {
-    const storeMap = {
-      'STORE_KA_BLR_01': 'Brigade Road Flagship',
-      'STORE_KA_MYS_01': 'Mysuru Central',
-      'STORE_KA_MNG_01': 'Mangaluru Coastal',
-      'STORE_KA_HUB_01': 'Hubballi Hub',
-      'STORE_RET_JAYANAGAR': 'Jayanagar',
-      'STORE_RET_RAJAJINAGAR': 'Rajajinagar',
-      'STORE_RET_WHITEFIELD': 'Whitefield',
-      'STORE_RET_MARATHAHALLI': 'Marathahalli',
-      'STORE_RET_YELAHANKA': 'Yelahanka',
-      'STORE_RET_PEENYA_WH': 'Peenya WH'
-    };
-    topbarStore.textContent = storeMap[selectedStoreId] || currentUser?.store_name || 'Assigned Store';
+  if (topbarStore) {
+    topbarStore.textContent = activeStoreName;
   }
 
-  // Render Summary Cards
-  renderSummaryCards(summary);
+  const breadcrumbStore = document.getElementById('breadcrumb-store-name');
+  if (breadcrumbStore) {
+    breadcrumbStore.textContent = activeStoreName;
+  }
 
-  // Render Full Inventory Table
-  renderInventoryTable(inventory, { targetContainerId: 'inventory-table-container' });
+  // Render Summary Cards safely
+  try {
+    renderSummaryCards(summary);
+  } catch (err) {
+    console.error('renderSummaryCards error:', err);
+  }
 
-  // Render Dashboard Priority Preview Table (Low Stock + Out of Stock items)
-  const priorityItems = inventory.filter(i => (i.quantity ?? i.availableQty ?? 0) <= (i.minThreshold || 15));
-  renderInventoryTable(priorityItems.length > 0 ? priorityItems : inventory.slice(0, 5), {
-    targetContainerId: 'dashboard-inventory-table-container'
-  });
+  // Render Full Inventory Table safely
+  try {
+    renderInventoryTable(inventory, { targetContainerId: 'inventory-table-container' });
+  } catch (err) {
+    console.error('renderInventoryTable error:', err);
+  }
 
-  // Render Transfers View (Manager-Approved Read-Only)
-  renderTransfersView(transfers, 'transfers-view-container', {
-    search: transferSearchQuery,
-    statusFilter: transferStatusFilter
-  });
+  // Render Dashboard Priority Preview Table safely
+  try {
+    const priorityItems = inventory.filter(i => (i.quantity ?? i.availableQty ?? 0) <= (i.minThreshold || 15));
+    renderInventoryTable(priorityItems.length > 0 ? priorityItems : inventory.slice(0, 5), {
+      targetContainerId: 'dashboard-inventory-table-container'
+    });
+  } catch (err) {
+    console.error('renderInventoryTable dashboard error:', err);
+  }
+
+  // Render Transfers View safely
+  try {
+    renderTransfersView(transfers, 'transfers-view-container', {
+      search: transferSearchQuery,
+      statusFilter: transferStatusFilter
+    });
+  } catch (err) {
+    console.error('renderTransfersView error:', err);
+  }
 
   // Update Transfer last synchronized indicator
   const transfersSyncText = document.getElementById('transfers-sync-text');

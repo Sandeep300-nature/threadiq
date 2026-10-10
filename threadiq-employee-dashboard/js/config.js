@@ -12,23 +12,23 @@ export const APP_CONFIG = {
   
   // Current Store Context (Employee-facing constraint: single assigned store)
   CURRENT_STORE: {
-    id: 'store_ka_blr_04',
-    code: 'KA-BLR-04',
-    name: 'Bengaluru Central',
-    location: 'Brigade Road, Bengaluru, Karnataka 560001',
-    zone: 'Karnataka South Metro',
+    id: 'STORE_KA_MYS_01',
+    code: 'KA-MYS-01',
+    name: 'Mysuru Central',
+    location: 'D. Devaraj Urs Road, Mysuru, Karnataka 570001',
+    zone: 'Karnataka Heritage Zone',
     managerName: 'Priya Kulkarni',
     totalCapacityUnits: 5000,
   },
 
   // Active Authenticated Employee
   CURRENT_EMPLOYEE: {
-    id: 'EMP-TIQ-8842',
+    id: 'EMP001',
     name: 'Rahul Sharma',
     role: 'Store Associate / Inventory Specialist',
     email: 'rahul.sharma@threadiq.in',
     avatarInitials: 'RS',
-    assignedStoreId: 'store_ka_blr_04',
+    assignedStoreId: 'STORE_KA_MYS_01',
     permissions: {
       canAdjustInventory: true,
       canConfirmTransfers: true,

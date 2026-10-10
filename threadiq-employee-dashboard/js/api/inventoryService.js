@@ -184,60 +184,98 @@ class InventoryService {
       if (filters.status && filters.status !== 'all') queryParams.append('status', filters.status);
       if (filters.search) queryParams.append('search', filters.search);
 
-      const targetStoreId = filters.storeId || this.currentUser?.assigned_store_id || 'STORE_KA_BLR_01';
+      const targetStoreId = filters.storeId || this.currentUser?.assigned_store_id || 'STORE_KA_MYS_01';
       queryParams.append('storeId', targetStoreId);
 
-      const res = await fetch(`${this.apiBase}/inventory?${queryParams.toString()}`, {
+      // Try primary store-scoped endpoint, falling back to central manager endpoints
+      let res = await fetch(`${this.apiBase}/stores/me/inventory?${queryParams.toString()}`, {
         headers: this._getHeaders()
       });
 
       if (!res.ok) {
-        if (res.status === 401) {
-          this.logout();
-          throw new Error('Session expired. Please log in again.');
-        }
+        res = await fetch(`${this.apiBase}/v1/inventory?${queryParams.toString()}`, {
+          headers: this._getHeaders()
+        });
+      }
+      if (!res.ok) {
+        res = await fetch(`${this.apiBase}/inventory?${queryParams.toString()}`, {
+          headers: this._getHeaders()
+        });
+      }
+
+      if (!res.ok) {
         throw new Error(`Inventory fetch failed: HTTP ${res.status}`);
       }
 
       const data = await res.json();
+      const items = Array.isArray(data) ? data : (data.items || []);
+      const totalCount = data.totalCount ?? data.total ?? items.length;
+      const storeName = data.storeName || (targetStoreId === 'STORE_KA_MYS_01' ? 'Mysuru Central' : 'Brigade Road Flagship');
+
       return {
         storeId: targetStoreId,
-        storeName: data.items?.[0]?.storeName || (targetStoreId === 'STORE_KA_MYS_01' ? 'Mysuru Central' : 'Bengaluru Central'),
-        items: data.items || [],
-        totalCount: data.total || (data.items || []).length
+        storeName: storeName,
+        items: items,
+        totalCount: totalCount
       };
     } catch (err) {
-      console.warn('API getInventory error, using fallback:', err.message);
-      const items = MockStorage.getInventory();
-      return { storeId: this.currentUser?.assigned_store_id || 'STORE_KA_BLR_01', items, totalCount: items.length };
+      console.warn('API getInventory error:', err.message);
+      return {
+        storeId: filters.storeId || this.currentUser?.assigned_store_id || 'STORE_KA_MYS_01',
+        storeName: filters.storeId === 'STORE_KA_MYS_01' ? 'Mysuru Central' : 'Assigned Store',
+        items: [],
+        totalCount: 0,
+        error: err.message
+      };
     }
   }
 
   async getSummary(storeId) {
     try {
-      const targetStoreId = storeId || this.currentUser?.assigned_store_id || 'STORE_KA_BLR_01';
+      const targetStoreId = storeId || this.currentUser?.assigned_store_id || 'STORE_KA_MYS_01';
+      let res = await fetch(`${this.apiBase}/stores/me/inventory/summary?storeId=${encodeURIComponent(targetStoreId)}`, {
+        headers: this._getHeaders()
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+
+      // Fallback: derive authoritative summary directly from getInventory
       const invRes = await this.getInventory({ storeId: targetStoreId });
       const items = invRes.items || [];
+      const totalUnits = items.reduce((s, i) => s + (i.quantity ?? i.availableQty ?? 0), 0);
+      const availableCount = items.filter(i => (i.quantity ?? i.availableQty ?? 0) > 0).length;
+      const lowStockCount = items.filter(i => {
+        const q = i.quantity ?? i.availableQty ?? 0;
+        const th = i.minThreshold ?? 15;
+        return q > 0 && q < th;
+      }).length;
+      const outOfStockCount = items.filter(i => (i.quantity ?? i.availableQty ?? 0) === 0).length;
+
       return {
         storeId: targetStoreId,
         storeName: invRes.storeName,
-        storeCode: items[0]?.storeCode || (targetStoreId === 'STORE_KA_MYS_01' ? 'KA-MYS-01' : 'KA-BLR-04'),
-        totalStockUnits: items.reduce((s, i) => s + (i.availableQty ?? i.quantity ?? 0), 0),
-        availableProducts: new Set(items.map(i => i.name)).size,
-        lowStockVariants: items.filter(i => (i.availableQty ?? i.quantity) > 0 && (i.availableQty ?? i.quantity) < i.minThreshold).length,
-        outOfStockVariants: items.filter(i => (i.availableQty ?? i.quantity) === 0).length,
+        storeCode: items[0]?.storeCode || (targetStoreId === 'STORE_KA_MYS_01' ? 'KA-MYS-01' : 'KA-BLR-01'),
+        totalStockUnits: totalUnits,
+        availableProducts: availableCount,
+        lowStockVariants: lowStockCount,
+        outOfStockVariants: outOfStockCount,
         totalTrackedVariants: items.length,
         lastSyncTimestamp: new Date().toISOString()
       };
     } catch (err) {
-      console.warn('API getSummary error, using fallback:', err.message);
-      const items = MockStorage.getInventory();
+      console.warn('API getSummary error:', err.message);
       return {
-        totalStockUnits: items.reduce((s, i) => s + (i.quantity || 0), 0),
-        availableProducts: items.filter(i => i.quantity > 0).length,
-        lowStockVariants: items.filter(i => 0 < i.quantity && i.quantity < i.minThreshold).length,
-        outOfStockVariants: items.filter(i => i.quantity === 0).length,
-        totalTrackedVariants: items.length
+        storeId: storeId || 'STORE_KA_MYS_01',
+        storeName: 'Assigned Store',
+        totalStockUnits: 0,
+        availableProducts: 0,
+        lowStockVariants: 0,
+        outOfStockVariants: 0,
+        totalTrackedVariants: 0,
+        lastSyncTimestamp: new Date().toISOString()
       };
     }
   }
@@ -257,7 +295,6 @@ class InventoryService {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         if (res.status === 409) {
-          // Concurrency Conflict (Optimistic Locking)
           throw new Error(errorData.detail || 'Concurrency Conflict: Stock was updated by another session. Please reload and retry.');
         }
         throw new Error(errorData.detail || `Stock adjustment rejected: HTTP ${res.status}`);
@@ -272,11 +309,13 @@ class InventoryService {
     }
   }
 
-  async getHistory(filters = {}) {
+  async getHistory(filters = {}, storeId = null) {
     try {
       const queryParams = new URLSearchParams();
       if (filters.updateType && filters.updateType !== 'all') queryParams.append('update_type', filters.updateType);
       if (filters.search) queryParams.append('search', filters.search);
+      const targetStoreId = storeId || this.currentUser?.assigned_store_id;
+      if (targetStoreId) queryParams.append('storeId', targetStoreId);
 
       const res = await fetch(`${this.apiBase}/stores/me/inventory/history?${queryParams.toString()}`, {
         headers: this._getHeaders()
@@ -285,14 +324,18 @@ class InventoryService {
       if (!res.ok) throw new Error(`History fetch failed: HTTP ${res.status}`);
       return await res.json();
     } catch (err) {
-      console.warn('API getHistory error, using fallback:', err.message);
-      return { history: MockStorage.getHistory() };
+      console.warn('API getHistory error:', err.message);
+      return { history: [] };
     }
   }
 
-  async getAlerts() {
+  async getAlerts(storeId = null) {
     try {
-      const res = await fetch(`${this.apiBase}/stores/me/inventory/alerts`, {
+      const targetStoreId = storeId || this.currentUser?.assigned_store_id;
+      const url = targetStoreId
+        ? `${this.apiBase}/stores/me/inventory/alerts?storeId=${encodeURIComponent(targetStoreId)}`
+        : `${this.apiBase}/stores/me/inventory/alerts`;
+      const res = await fetch(url, {
         headers: this._getHeaders()
       });
 
@@ -310,12 +353,25 @@ class InventoryService {
       const url = targetStoreId
         ? `${this.apiBase}/stores/me/transfers?storeId=${encodeURIComponent(targetStoreId)}`
         : `${this.apiBase}/stores/me/transfers`;
-      const res = await fetch(url, {
+      let res = await fetch(url, {
         headers: this._getHeaders()
       });
 
+      if (!res.ok) {
+        res = await fetch(`${this.apiBase}/v1/transfers?storeId=${encodeURIComponent(targetStoreId || '')}`, {
+          headers: this._getHeaders()
+        });
+      }
+      if (!res.ok) {
+        res = await fetch(`${this.apiBase}/transfers?storeId=${encodeURIComponent(targetStoreId || '')}`, {
+          headers: this._getHeaders()
+        });
+      }
+
       if (!res.ok) throw new Error(`Transfers fetch failed: HTTP ${res.status}`);
-      return await res.json();
+      const data = await res.json();
+      const transfers = Array.isArray(data) ? data : (data.transfers || []);
+      return { transfers: transfers };
     } catch (err) {
       console.warn('API getTransfers error:', err.message);
       return { transfers: [], error: err.message };
