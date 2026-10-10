@@ -22,7 +22,7 @@ def _resolve_db_path() -> str:
 DB_PATH = _resolve_db_path()
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = sqlite3.connect(_resolve_db_path(), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA journal_mode = WAL;")
@@ -220,13 +220,18 @@ def init_db():
 
         # Apply schema migrations for imported retail tables (products, sales, suppliers, purchase_orders, promotions)
         try:
-            from backend.import_retail_datasets import apply_schema_migrations, import_all_datasets
+            try:
+                from backend.import_retail_datasets import apply_schema_migrations, import_all_datasets
+            except (ImportError, ModuleNotFoundError):
+                from import_retail_datasets import apply_schema_migrations, import_all_datasets
+
             apply_schema_migrations(conn)
             cur_p = conn.execute("SELECT COUNT(*) FROM products;")
             if cur_p.fetchone()[0] == 0:
-                import_all_datasets(db_path=DB_PATH)
+                import_all_datasets(db_path=_resolve_db_path())
         except Exception as e:
-            pass
+            import logging
+            logging.exception(f"[ThreadIQ DB] Error applying schema or importing retail datasets: {e}")
 
         # Seed all Karnataka Retail Stores
         stores_data = [
@@ -292,73 +297,83 @@ def init_db():
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
             """, b)
 
-        # Seed Inventory for Bengaluru Central and Mysuru Central if table is empty
-        cur = conn.execute("SELECT COUNT(*) FROM inventory;");
-        count = cur.fetchone()[0]
-        if count == 0:
-            now_iso = datetime.now(timezone.utc).isoformat()
-            
-            # 20 Variants across 4 colours and 5 sizes
-            variants_spec = [
-                # Essential Heavyweight Crew Neck (Black)
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "S", "TIQ-CRW-BLK-S", 18, 15, 899, 15),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "M", "TIQ-CRW-BLK-M", 0, 20, 899, 35),  # BLR: 0, MYS: 35
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "L", "TIQ-CRW-BLK-L", 26, 15, 899, 20),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "XL", "TIQ-CRW-BLK-XL", 14, 15, 899, 12),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "XXL", "TIQ-CRW-BLK-XXL", 8, 10, 949, 18),
+        # 20 Variants across 4 colours and 5 sizes for Bengaluru Flagship and Mysuru Central
+        variants_spec = [
+            # Essential Heavyweight Crew Neck (Black)
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "S", "TIQ-CRW-BLK-S", 18, 15, 899, 15),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "M", "TIQ-CRW-BLK-M", 0, 20, 899, 35),  # BLR: 0, MYS: 35
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "L", "TIQ-CRW-BLK-L", 26, 15, 899, 20),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "XL", "TIQ-CRW-BLK-XL", 14, 15, 899, 12),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "Black", "#18181b", "black", "XXL", "TIQ-CRW-BLK-XXL", 8, 10, 949, 18),
 
-                # Essential Heavyweight Crew Neck (White)
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "S", "TIQ-CRW-WHT-S", 32, 15, 899, 16),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "M", "TIQ-CRW-WHT-M", 24, 20, 899, 28),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "L", "TIQ-CRW-WHT-L", 4, 15, 899, 22),   # BLR: 4, MYS: 22
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "XL", "TIQ-CRW-WHT-XL", 19, 15, 899, 14),
-                ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "XXL", "TIQ-CRW-WHT-XXL", 0, 10, 949, 10),
+            # Essential Heavyweight Crew Neck (White)
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "S", "TIQ-CRW-WHT-S", 32, 15, 899, 16),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "M", "TIQ-CRW-WHT-M", 24, 20, 899, 28),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "L", "TIQ-CRW-WHT-L", 4, 15, 899, 22),   # BLR: 4, MYS: 22
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "XL", "TIQ-CRW-WHT-XL", 19, 15, 899, 14),
+            ("Essential Heavyweight Crew Neck", "Heavyweight Cotton", "White", "#ffffff", "white", "XXL", "TIQ-CRW-WHT-XXL", 0, 10, 949, 10),
 
-                # Supima Relaxed Fit (Navy Blue)
-                ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "S", "TIQ-SPM-NVY-S", 21, 15, 1099, 19),
-                ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "M", "TIQ-SPM-NVY-M", 38, 20, 1099, 25),
-                ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "L", "TIQ-SPM-NVY-L", 29, 15, 1099, 15),
-                ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "XL", "TIQ-SPM-NVY-XL", 12, 15, 1099, 5),   # BLR: 12, MYS: 5 (Low in MYS!)
-                ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "XXL", "TIQ-SPM-NVY-XXL", 15, 10, 1149, 11),
+            # Supima Relaxed Fit (Navy Blue)
+            ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "S", "TIQ-SPM-NVY-S", 21, 15, 1099, 19),
+            ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "M", "TIQ-SPM-NVY-M", 38, 20, 1099, 25),
+            ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "L", "TIQ-SPM-NVY-L", 29, 15, 1099, 15),
+            ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "XL", "TIQ-SPM-NVY-XL", 12, 15, 1099, 5),   # BLR: 12, MYS: 5 (Low in MYS!)
+            ("Supima Relaxed Fit Tee", "Supima Cotton", "Navy Blue", "#1e3a8a", "navy", "XXL", "TIQ-SPM-NVY-XXL", 15, 10, 1149, 11),
 
-                # Performance Dry-Fit (Grey)
-                ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "S", "TIQ-PRF-GRY-S", 17, 15, 799, 20),
-                ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "M", "TIQ-PRF-GRY-M", 42, 20, 799, 30),
-                ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "L", "TIQ-PRF-GRY-L", 27, 15, 799, 18),
-                ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "XL", "TIQ-PRF-GRY-XL", 11, 15, 799, 14),
-                ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "XXL", "TIQ-PRF-GRY-XXL", 35, 10, 849, 0) # BLR: 35, MYS: 0 (Out in MYS!)
-            ]
+            # Performance Dry-Fit (Grey)
+            ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "S", "TIQ-PRF-GRY-S", 17, 15, 799, 20),
+            ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "M", "TIQ-PRF-GRY-M", 42, 20, 799, 30),
+            ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "L", "TIQ-PRF-GRY-L", 27, 15, 799, 18),
+            ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "XL", "TIQ-PRF-GRY-XL", 11, 15, 799, 14),
+            ("Performance Dry-Fit Athletic Tee", "Activewear Dry-Fit", "Grey", "#64748b", "grey", "XXL", "TIQ-PRF-GRY-XXL", 35, 10, 849, 0) # BLR: 35, MYS: 0 (Out in MYS!)
+        ]
 
-            for name, cat, col, hex_c, col_id, sz, sku, blr_qty, thold, price, mys_qty in variants_spec:
-                # Bengaluru inventory
-                conn.execute("""
-                    INSERT INTO inventory (
-                        inventory_id, store_id, product_id, product_name, category,
-                        colour, colour_hex, colour_id, size, sku,
-                        available_quantity, minimum_stock_threshold, unit_price,
-                        last_updated_timestamp, last_updated_by_employee_id, version
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
-                """, (
-                    f"inv_blr_{sku}", "STORE_KA_BLR_01", f"prod_{sku.lower()}", name, cat,
-                    col, hex_c, col_id, sz, sku,
-                    blr_qty, thold, price, now_iso, "EMP001"
-                ))
+        # Register benchmark product in products table
+        conn.execute("""
+            INSERT OR IGNORE INTO products (
+                sku, product_name, category, style, colour, colour_hex, size, season, selling_price
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'All season', ?);
+        """, ("TSHIRT-4XL-BLK", "Vintage Washed Heavyweight Tee", "T-Shirts", "Heavyweight", "Black", "#18181b", "4XL", 899))
 
-                # Mysuru inventory
-                conn.execute("""
-                    INSERT INTO inventory (
-                        inventory_id, store_id, product_id, product_name, category,
-                        colour, colour_hex, colour_id, size, sku,
-                        available_quantity, minimum_stock_threshold, unit_price,
-                        last_updated_timestamp, last_updated_by_employee_id, version
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
-                """, (
-                    f"inv_mys_{sku}", "STORE_KA_MYS_01", f"prod_{sku.lower()}", name, cat,
-                    col, hex_c, col_id, sz, sku,
-                    mys_qty, thold, price, now_iso, "EMP002"
-                ))
+        for name, cat, col, hex_c, col_id, sz, sku, blr_qty, thold, price, mys_qty in variants_spec:
+            # Register product in products table
+            conn.execute("""
+                INSERT OR IGNORE INTO products (
+                    sku, product_name, category, style, colour, colour_hex, size, season, selling_price
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'All season', ?);
+            """, (sku, name, cat, "T-Shirts", col, hex_c, sz, price))
 
-            # Initial transfers
+            # Bengaluru inventory
+            conn.execute("""
+                INSERT OR IGNORE INTO inventory (
+                    inventory_id, store_id, product_id, product_name, category,
+                    colour, colour_hex, colour_id, size, sku,
+                    available_quantity, minimum_stock_threshold, unit_price,
+                    last_updated_timestamp, last_updated_by_employee_id, version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+            """, (
+                f"inv_blr_{sku}", "STORE_KA_BLR_01", f"prod_{sku.lower()}", name, cat,
+                col, hex_c, col_id, sz, sku,
+                blr_qty, thold, price, now_seed_iso, "EMP001"
+            ))
+
+            # Mysuru inventory
+            conn.execute("""
+                INSERT OR IGNORE INTO inventory (
+                    inventory_id, store_id, product_id, product_name, category,
+                    colour, colour_hex, colour_id, size, sku,
+                    available_quantity, minimum_stock_threshold, unit_price,
+                    last_updated_timestamp, last_updated_by_employee_id, version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+            """, (
+                f"inv_mys_{sku}", "STORE_KA_MYS_01", f"prod_{sku.lower()}", name, cat,
+                col, hex_c, col_id, sz, sku,
+                mys_qty, thold, price, now_seed_iso, "EMP002"
+            ))
+
+        # Initial transfers (idempotent, independent)
+        cur_tr = conn.execute("SELECT COUNT(*) FROM stock_transfers;")
+        if cur_tr.fetchone()[0] == 0:
             conn.execute("""
                 INSERT OR IGNORE INTO stock_transfers (
                     transfer_id, source_store_id, destination_store_id,
@@ -373,7 +388,9 @@ def init_db():
                 ('TRF-KA-2026-0870', 'STORE_KA_BLR_01', 'STORE_KA_MYS_01', 'prod_tiq-ath-gry-l', 'Athletic Tech Tee', 'Grey', 'L', 'TIQ-ATH-GRY-L', 12, '2026-10-08T09:00:00Z', 'Delivered', 'Received', '2026-10-08T09:30:00Z', 'Priya Kulkarni (Store Manager)', 'MGR001', '2026-10-08T17:45:00Z', 'EMP002', 'Completed seasonal rebalancing between stores.')
             """)
 
-            # Initial history records
+        # Initial history records (idempotent, independent)
+        cur_hist = conn.execute("SELECT COUNT(*) FROM inventory_history;")
+        if cur_hist.fetchone()[0] == 0:
             conn.execute("""
                 INSERT OR IGNORE INTO inventory_history (
                     history_id, store_id, product_id, product_name, colour, size, sku,

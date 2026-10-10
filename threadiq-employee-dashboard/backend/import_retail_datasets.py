@@ -21,11 +21,34 @@ import sqlite3
 import datetime
 from typing import Dict, List, Tuple, Any
 
-# Resolve paths
+# Resolve paths dynamically across local and serverless Vercel environments
+import tempfile
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
-RAW_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
-DB_PATH = os.path.join(CURRENT_DIR, "threadiq.db")
+
+def resolve_raw_data_dir() -> str:
+    candidates = [
+        os.path.join(PROJECT_ROOT, "data", "raw"),
+        os.path.join(os.path.dirname(CURRENT_DIR), "data", "raw"),
+        os.path.join(os.getcwd(), "data", "raw"),
+        os.path.join(os.path.dirname(os.getcwd()), "data", "raw"),
+        "/var/task/data/raw",
+    ]
+    for c in candidates:
+        if os.path.exists(c) and os.path.exists(os.path.join(c, "products.csv")):
+            return c
+    return os.path.join(PROJECT_ROOT, "data", "raw")
+
+def _resolve_db_path() -> str:
+    env_path = os.environ.get("THREADIQ_DB_PATH") or os.environ.get("DATABASE_PATH")
+    if env_path:
+        return env_path
+    if os.environ.get("VERCEL"):
+        return os.path.join(tempfile.gettempdir(), "threadiq.db")
+    return os.path.join(CURRENT_DIR, "threadiq.db")
+
+RAW_DATA_DIR = resolve_raw_data_dir()
+DB_PATH = _resolve_db_path()
 
 COLOUR_HEX_MAP = {
     'Beige': '#d4b996',
@@ -288,11 +311,16 @@ def validate_file_headers(raw_dir: str = RAW_DATA_DIR) -> Dict[str, bool]:
     return results
 
 
-def import_all_datasets(raw_dir: str = RAW_DATA_DIR, db_path: str = DB_PATH) -> Dict[str, Any]:
+def import_all_datasets(raw_dir: str = None, db_path: str = None) -> Dict[str, Any]:
     """
     Executes a complete, repeatable import of all 7 retail datasets into SQLite.
     Returns an execution report detailing imported and rejected rows.
     """
+    if raw_dir is None:
+        raw_dir = resolve_raw_data_dir()
+    if db_path is None:
+        db_path = _resolve_db_path()
+
     summary = {
         'files_validated': 0,
         'stores_imported': 0,

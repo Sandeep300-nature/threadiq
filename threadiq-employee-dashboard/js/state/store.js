@@ -134,7 +134,7 @@ class AppStore {
         inventoryService.getInventory(filtersWithStore),
         inventoryService.getSummary(targetStoreId),
         inventoryService.getAlerts(),
-        inventoryService.getTransfers(),
+        inventoryService.getTransfers(targetStoreId),
         inventoryService.getHistory(this.state.historyFilters)
       ]);
 

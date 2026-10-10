@@ -638,11 +638,14 @@ def get_approved_transfers(current_employee: dict = Depends(get_current_employee
     return {"transfers": transfers, "total": len(transfers), "readOnly": True, "managedBy": "Store Manager"}
 
 @app.get("/api/stores/me/transfers")
-def get_transfers(current_employee: dict = Depends(get_current_employee)):
+def get_transfers(
+    store_id: Optional[str] = Query(None, alias="storeId"),
+    current_employee: dict = Depends(get_current_employee)
+):
     """
     Returns all transfers (pending, approved, in transit, received) involving the employee's assigned store.
     """
-    store_id = current_employee["store_id"]
+    target_store_id = store_id or current_employee["store_id"]
     conn = get_db()
     try:
         cur = conn.execute("""
@@ -657,7 +660,7 @@ def get_transfers(current_employee: dict = Depends(get_current_employee)):
             JOIN stores s_dst ON t.destination_store_id = s_dst.store_id
             WHERE (t.source_store_id = ? OR t.destination_store_id = ?)
             ORDER BY t.request_date DESC;
-        """, (store_id, store_id))
+        """, (target_store_id, target_store_id))
         rows = cur.fetchall()
 
         transfers = []
@@ -682,8 +685,8 @@ def get_transfers(current_employee: dict = Depends(get_current_employee)):
                 "status": r["status"],
                 "receivedDate": r["received_date"],
                 "notes": r["notes"],
-                "direction": "Outgoing" if r["source_store_id"] == store_id else "Incoming",
-                "directionType": "outgoing" if r["source_store_id"] == store_id else "incoming",
+                "direction": "Outgoing" if r["source_store_id"] == target_store_id else "Incoming",
+                "directionType": "outgoing" if r["source_store_id"] == target_store_id else "incoming",
             })
         return {"transfers": transfers, "total": len(transfers), "readOnly": True}
     finally:

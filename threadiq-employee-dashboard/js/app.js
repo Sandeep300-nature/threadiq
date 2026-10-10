@@ -628,7 +628,13 @@ function updateUI(state) {
       'STORE_KA_BLR_01': 'Brigade Road Flagship',
       'STORE_KA_MYS_01': 'Mysuru Central',
       'STORE_KA_MNG_01': 'Coastal City Pavilion (Mangaluru)',
-      'STORE_KA_HUB_01': 'North Karnataka Hub (Hubballi)'
+      'STORE_KA_HUB_01': 'North Karnataka Hub (Hubballi)',
+      'STORE_RET_JAYANAGAR': 'Jayanagar',
+      'STORE_RET_RAJAJINAGAR': 'Rajajinagar',
+      'STORE_RET_WHITEFIELD': 'Whitefield',
+      'STORE_RET_MARATHAHALLI': 'Marathahalli',
+      'STORE_RET_YELAHANKA': 'Yelahanka',
+      'STORE_RET_PEENYA_WH': 'Peenya WH'
     };
     invStoreTitle.textContent = storeMap[selectedStoreId] || summary?.storeName || 'Assigned Store';
   }
@@ -640,7 +646,13 @@ function updateUI(state) {
       'STORE_KA_BLR_01': 'Brigade Road Flagship',
       'STORE_KA_MYS_01': 'Mysuru Central',
       'STORE_KA_MNG_01': 'Mangaluru Coastal',
-      'STORE_KA_HUB_01': 'Hubballi Hub'
+      'STORE_KA_HUB_01': 'Hubballi Hub',
+      'STORE_RET_JAYANAGAR': 'Jayanagar',
+      'STORE_RET_RAJAJINAGAR': 'Rajajinagar',
+      'STORE_RET_WHITEFIELD': 'Whitefield',
+      'STORE_RET_MARATHAHALLI': 'Marathahalli',
+      'STORE_RET_YELAHANKA': 'Yelahanka',
+      'STORE_RET_PEENYA_WH': 'Peenya WH'
     };
     topbarStore.textContent = storeMap[selectedStoreId] || currentUser?.store_name || 'Assigned Store';
   }

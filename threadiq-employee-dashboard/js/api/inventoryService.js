@@ -304,9 +304,13 @@ class InventoryService {
     }
   }
 
-  async getTransfers() {
+  async getTransfers(storeId = null) {
     try {
-      const res = await fetch(`${this.apiBase}/stores/me/transfers`, {
+      const targetStoreId = storeId || this.currentUser?.assigned_store_id;
+      const url = targetStoreId
+        ? `${this.apiBase}/stores/me/transfers?storeId=${encodeURIComponent(targetStoreId)}`
+        : `${this.apiBase}/stores/me/transfers`;
+      const res = await fetch(url, {
         headers: this._getHeaders()
       });
 
